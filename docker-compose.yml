@@ -6,7 +6,7 @@ services:
     container_name: db_postgres
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: mortandela1010@1
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: ubiquitous_db
     ports:
       - "5432:5432"

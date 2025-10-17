@@ -15,12 +15,19 @@ public class ConnectivityCheck {
     private String serviceName;
     private Instant checkTimestamp;
 
-    // Getters, Setters e Construtores
+    public Instant getCheckTimestamp() {
+        return checkTimestamp;
+    }
+
+    public void setCheckTimestamp(Instant checkTimestamp) {
+        this.checkTimestamp = checkTimestamp;
+    }
+
     public ConnectivityCheck() {}
 
     public ConnectivityCheck(String serviceName) {
         this.serviceName = serviceName;
         this.checkTimestamp = Instant.now();
     }
-    // ... outros getters e setters
+  
 }
