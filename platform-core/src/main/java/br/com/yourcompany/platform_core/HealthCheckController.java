@@ -15,7 +15,7 @@ public class HealthCheckController {
     private ConnectivityCheckRepository repository;
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     private static final String KAFKA_TOPIC = "health-check-topic";
 

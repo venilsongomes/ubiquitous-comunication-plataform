@@ -1,12 +1,10 @@
 package br.com.yourcompany.platform_core.dominio.message;
+import java.time.Instant;
 import java.util.UUID;
-
-import org.apache.kafka.common.Uuid;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.ManyToAny;
-
 import br.com.yourcompany.platform_core.dominio.Conversation.Conversation;
 import br.com.yourcompany.platform_core.dominio.user.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
@@ -23,29 +21,41 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode
 public class Message {
 
     @Id
     private UUID id; // Será gerado pelo cliente
 
-    @ManyToOne( fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", nullable = false)
-    private Conversation conversationId;
+    private Conversation conversation;
     
-    @ManyToOne( fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
-    
 
-    @CreationTimestamp
+    @Column(columnDefinition = "TEXT")
     private String content;
 
+    @CreationTimestamp
+    private Instant createdAt;
 
-    public Message(Conversation conversationId, User sender, String content) {
-        this.conversationId = conversationId;
+
+    public Message(UUID id, Conversation conversation, User sender, String content) {
+        this.id = id;
+        this.conversation = conversation;
         this.sender = sender;
         this.content = content;
+    }
+
+
+    public Message(UUID id, Conversation conversation, org.apache.catalina.User sender2, String content, Instant createdAt) {
+        this.id = id;
+        this.conversation = conversation;
+        this.sender = (User) sender2;
+        this.content = content;
+        this.createdAt = createdAt;
     }
 
     
