@@ -1,11 +1,7 @@
 package br.com.yourcompany.platform_core.dominio.Conversation;
-
 import java.time.Instant;
 import java.util.UUID;
-
-import org.apache.kafka.common.Uuid;
 import org.hibernate.annotations.CreationTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
