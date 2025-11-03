@@ -24,17 +24,17 @@ public class KafkaConsumerConfig {
     private String groupId;
 
     @Bean
-    public ConsumerFactory<String, InternalMessageEvent> consumerFactory() {
+    public ConsumerFactory<String, Object> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         
         // Configuração do Desserializador JSON
-        JsonDeserializer<InternalMessageEvent> deserializer = 
-                new JsonDeserializer<>(InternalMessageEvent.class);
+        JsonDeserializer<Object> deserializer = 
+                new JsonDeserializer<>(Object.class);
         
         // IMPORTANTE: Diga ao desserializador que ele pode confiar no nosso pacote de DTOs
-        deserializer.addTrustedPackages("br.com.yourcompany.platformcore.dto");
+        deserializer.addTrustedPackages("*");
 
         return new DefaultKafkaConsumerFactory<>(
                 props,
@@ -44,10 +44,10 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, InternalMessageEvent> 
+    public ConcurrentKafkaListenerContainerFactory<String, Object> 
             kafkaListenerContainerFactory() {
         
-        ConcurrentKafkaListenerContainerFactory<String, InternalMessageEvent> factory =
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
