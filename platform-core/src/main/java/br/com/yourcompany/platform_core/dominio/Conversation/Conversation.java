@@ -14,6 +14,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.List; // <-- ADICIONAR
+import jakarta.persistence.OneToMany; // <-- ADICIONAR
+import jakarta.persistence.CascadeType; // <-- ADICIONAR
 
 @Entity
 @Table(name = "conversations")
@@ -35,6 +38,13 @@ public class Conversation {
 
     @CreationTimestamp
     private Instant createdAt;
+    
+    @OneToMany(
+        mappedBy = "conversation", // "conversation" é o nome do campo na classe ConversationParticipant
+        cascade = CascadeType.ALL, // Garante que se deletarmos uma conversa, os participantes saem juntos
+        orphanRemoval = true
+    )
+    private List<ConversationParticipant> participants;
 
     public Conversation(ConversationType type, String groupName) {
         this.type = type;

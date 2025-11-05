@@ -26,6 +26,7 @@ public class KafkaProducerConfig {
         // Configura o valor para ser serializado como JSON
         // Configura o valor para ser serializado como JSON
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class); 
+        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 

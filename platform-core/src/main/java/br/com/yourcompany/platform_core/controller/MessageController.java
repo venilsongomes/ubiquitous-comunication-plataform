@@ -27,7 +27,7 @@ public class MessageController {
         // Na arquitetura final, o ID do usuário viria de um token JWT (Spring Security)
         // Por enquanto, vamos "fingir" que o remetente é um dos usuários que já criamos.
         // TODO: Substituir este UUID 'hardcoded' pelo ID do usuário autenticado.
-        UUID mockSenderId = UUID.fromString("b96c10b4-7b17-4973-a36b-83160166460d"); // <-- Pegue um ID válido do seu DB
+        UUID mockSenderId = UUID.fromString("83fd8be3-3e4e-4844-89ca-d49ab6c70539"); // <-- Pegue um ID válido do seu DB
         // -------------------------------------
 
         // 1. Criar o evento interno completo

@@ -43,7 +43,7 @@ public class RealtimeMessageHandler extends TextWebSocketHandler {
         // {"type": "SUBSCRIBE", "conversationId": "uuid-da-conversa"}
         // Vamos simular que todos que conectam estão ouvindo uma conversa específica
         
-        UUID mockConversationId = UUID.fromString("fdd487f2-8df6-4d05-a245-1b2217a7df71"); // <-- Use o ID da conversa que você criou
+        UUID mockConversationId = UUID.fromString("8009a91e-0f62-407a-850a-371fce8bd3a6"); // <-- Use o ID da conversa que você criou
         
         conversationSessions.computeIfAbsent(mockConversationId, k -> new CopyOnWriteArrayList<>())
                            .add(session);
