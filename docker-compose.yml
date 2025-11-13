@@ -1,12 +1,36 @@
 version: '3.8'
-
 services:
+  # --- SEU NOVO SERVIÇO JAVA ---
+  app:
+    build: ./platform-core  # Constrói usando o Dockerfile na pasta atual
+    container_name: platform_core_app
+    ports:
+      - "8080:8080" # Expõe a porta 8080 para o seu Windows
+    depends_on:
+      - postgres
+      - kafka
+      - minio
+    environment:
+      # Sobrescreve as configs do application.properties para rodar DENTRO da rede Docker
+      
+      # Conecta ao container 'postgres' em vez de localhost
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ubiquitous_db
+      
+      # Conecta ao container 'kafka' na porta INTERNA (9092)
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      
+      # Conecta ao container 'minio'
+      MINIO_ENDPOINT: http://minio:9000
+      
+      # Configurações de segurança (passamos aqui para não ficarem hardcoded na imagem)
+      # (Copie a chave que você gerou no passo anterior ou use uma variável de ambiente do sistema)
+      APPLICATION_SECURITY_JWT_SECRET_KEY: n3/A0c3c2h1L2s4L3k0c3U2YjcvZDg/Z0grTWFuZCFBJUQoRylKQE5jUWZUalgmcE4=
   postgres:
     image: postgres:15
     container_name: db_postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
       POSTGRES_DB: ubiquitous_db
     ports:
       - "5432:5432"
@@ -56,5 +80,27 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
+      # --- ADICIONE O SERVIÇO ABAIXO ---
+  minio:
+    image: minio/minio:latest # Use uma imagem recente
+    container_name: minio_storage
+    ports:
+      - "9000:9000" # Porta da API S3
+      - "9001:9001" # Porta do Console Web
+    environment:
+      # Credenciais de admin. GUARDE-AS!
+      MINIO_ROOT_USER: minioadmin 
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio_data:/data
+    # Comando para iniciar o servidor e o console
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
 volumes:
   postgres_data:
+  minio_data:

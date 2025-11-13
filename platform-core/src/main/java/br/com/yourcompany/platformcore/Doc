@@ -1,0 +1,20 @@
+Subindo cluster: docker-compose up -d
+
+- rodar spring: mvnw spring-boot:run
+
+
+
+
+
+
+
+curl -v -X PUT -d "Este eh o conteudo do meu arquivo de teste" "http://localhost:9000/ubiquitous-attachments/34b8787b-356b-4a5d-9ab8-4257e904a9c0/teste-manual.txt?partNumber=1&uploadId=ZDVhOThhNTEtZWRkZC00NmNmLTk5YjgtZDZiZGJiMmQxZTgyLjA1YWM3NjNkLWE2OTctNDBjYy1iZDBkLWQ1NjUxZWRlZWZhY3gxNzYyODYxMjgzNzY1Mjg4OTEx&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20251111T114123Z&X-Amz-SignedHeaders=host&X-Amz-Credential=minioadmin%2F20251111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Expires=900&X-Amz-Signature=6f5d70a15381f5af6c12659827045f3febc8c4aae24a61815cc82aeb7dcbf039"
+
+
+http://localhost:9000/ubiquitous-attachments/34b8787b-356b-4a5d-9ab8-4257e904a9c0/teste-manual.txt?partNumber=1&uploadId=ZDVhOThhNTEtZWRkZC00NmNmLTk5YjgtZDZiZGJiMmQxZTgyLjA1YWM3NjNkLWE2OTctNDBjYy1iZDBkLWQ1NjUxZWRlZWZhY3gxNzYyODYxMjgzNzY1Mjg4OTEx&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20251111T114123Z&X-Amz-SignedHeaders=host&X-Amz-Credential=minioadmin%2F20251111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Expires=900&X-Amz-Signature=6f5d70a15381f5af6c12659827045f3febc8c4aae24a61815cc82aeb7dcbf039
+
+
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/uploads/d35375e1-c575-4508-b382-24e69e45b9e3/complete" `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body '{"parts": [{"partNumber": 1, "eTag": "8dc75cacfbcf5d0619b93e61f4312c4b"}]}'
