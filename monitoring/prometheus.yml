@@ -1,0 +1,17 @@
+# Configuração global: raspar a cada 15 segundos
+global:
+  scrape_interval: 15s
+
+# Lista de alvos (jobs) para monitorar
+scrape_configs:
+  # Job 1: Monitorar o próprio Prometheus
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Job 2: Monitorar nossa aplicação Spring Boot
+  - job_name: "spring-boot-app"
+    metrics_path: /actuator/prometheus # O endpoint que liberamos
+    static_configs:
+      # 'app:8080' é o nome do serviço e a porta DENTRO da rede Docker
+      - targets: ["app:8080"]

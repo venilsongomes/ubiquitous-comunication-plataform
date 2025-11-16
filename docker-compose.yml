@@ -81,6 +81,31 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
       # --- ADICIONE O SERVIÇO ABAIXO ---
+
+  prometheus:
+      image: prom/prometheus:latest
+      container_name: prometheus
+      ports:
+        - "9090:9090" # Porta da UI do Prometheus
+      volumes:
+        # Monta nosso arquivo de configuração para dentro do contêiner
+        - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+        # Monta um volume para persistir os dados das métricas
+        - prometheus_data:/prometheus
+      command:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+      depends_on:
+        - app
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3000:3000" # Porta da UI do Grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
   minio:
     image: minio/minio:latest # Use uma imagem recente
     container_name: minio_storage
@@ -104,3 +129,5 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  prometheus_data:
+  grafana_data:

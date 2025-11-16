@@ -35,6 +35,9 @@ public class SecurityConfig {
                 // Libera o endpoint do WebSocket
                 .requestMatchers("/ws/connect/**").permitAll() 
                 
+                // Libera endpoints de monitoramento do Actuator
+                .requestMatchers("/actuator/**").permitAll()
+                
                 // Protege todo o resto
                 .anyRequest().authenticated() 
             )
