@@ -105,12 +105,14 @@ public class AttachmentUploadService {
                 .partNumber(partNumber)
                 .build();
 
+      
         UploadPartPresignRequest presignRequest = UploadPartPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(15))
                 .uploadPartRequest(uploadPartRequest)
                 .build();
 
         PresignedUploadPartRequest presigned = s3Presigner.presignUploadPart(presignRequest);
+
         return presigned.url().toString();
     }
 
@@ -187,11 +189,6 @@ public class AttachmentUploadService {
             // 1. Buscar o anexo no banco
             Attachment attachment = attachmentRepository.findById(attachmentId)
                     .orElseThrow(() -> new EntityNotFoundException("Anexo não encontrado"));
-
-            // 2. [Lógica de Permissão - TODO]
-            // Em um sistema real, aqui você verificaria se 'userId'
-            // é participante da conversa à qual este anexo pertence.
-            // Por enquanto, apenas verificamos se o upload está completo.
             
             if (!"COMPLETED".equals(attachment.getStatus())) {
                 throw new IllegalStateException("O upload deste arquivo ainda não foi finalizado.");

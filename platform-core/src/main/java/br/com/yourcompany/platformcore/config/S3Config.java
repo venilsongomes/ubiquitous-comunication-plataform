@@ -14,7 +14,7 @@ import java.net.URI;
 public class S3Config {
 
     @Value("${minio.endpoint}")
-    private String endpoint;
+    private String internalEndPoint;
 
     @Value("${minio.access-key}")
     private String accessKey;
@@ -29,10 +29,7 @@ public class S3Config {
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
-                .endpointOverride(URI.create(endpoint))
-                // CRUCIAL PARA MINIO: Força o estilo de caminho (path-style)
-                // http://localhost:9000/bucket-name/objeto
-                // em vez de http://bucket-name.localhost:9000/objeto (que é o padrão AWS)
+                .endpointOverride(URI.create(internalEndPoint))
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())
@@ -44,8 +41,9 @@ public class S3Config {
 
     @Bean
     public S3Presigner s3Presigner() {
+        String externalEndpoint = "http://localhost:9000";
         return S3Presigner.builder()
-                .endpointOverride(URI.create(endpoint))
+                .endpointOverride(URI.create(externalEndpoint))
                 .region(REGION)
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)))

@@ -1,22 +1,22 @@
 package br.com.yourcompany.platformcore.websocket;
-
 import br.com.yourcompany.platformcore.dto.InternalDeliveryEvent;
-import br.com.yourcompany.platformcore.dto.StatusUpdateEvent; // <-- Novo
-import br.com.yourcompany.platformcore.domain.message.MessageRecipientStatus; // <-- Novo
-import br.com.yourcompany.platformcore.repository.MessageRecipientStatusRepository; // <-- Novo
+import br.com.yourcompany.platformcore.dto.StatusUpdateEvent;
+import br.com.yourcompany.platformcore.domain.message.MessageRecipientStatus; 
+import br.com.yourcompany.platformcore.repository.MessageRecipientStatusRepository;
+import br.com.yourcompany.platformcore.service.PresenceService;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate; // <-- Novo
+import org.springframework.kafka.core.KafkaTemplate; 
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
 import java.io.IOException;
-import java.time.Instant; // <-- Novo
+import java.time.Instant; 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -25,6 +25,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class RealtimeMessageHandler extends TextWebSocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RealtimeMessageHandler.class);
+    @Autowired
+    private PresenceService presenceService;
 
     // Novo Tópico para notificar o remetente
     private static final String TOPIC_STATUS_UPDATES = "status_updates";
@@ -38,17 +40,20 @@ public class RealtimeMessageHandler extends TextWebSocketHandler {
     @Autowired private MessageRecipientStatusRepository statusRepository; // <-- Novo
 
 
+
+
+
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         logger.info("Nova conexão WebSocket estabelecida: {}", session.getId());
         
-        // --- SIMULAÇÃO DE AUTENTICAÇÃO E INSCRIÇÃO ---
-        // Em um app real, o cliente enviaria um token JWT.
-        // Vamos simular que a sessão pertence a um usuário específico.
-        
-        // Use o ID do usuário que é o DESTINATÁRIO das suas mensagens
-        // (ex: o usuário "gemini" ou "bot_interno" que você criou)
         UUID mockUserId = UUID.fromString("15aa1478-0e22-4458-8dc5-5e5b9dd588e8"); // <-- MUDE ISSO
+        
+        UUID userId = mockUserId;
+
+        presenceService.setUserOnline(userId);
+        logger.info("User {} marcado como ONLINE no Redis", userId);
         
         userSessions.computeIfAbsent(mockUserId, k -> new CopyOnWriteArrayList<>())
                            .add(session);

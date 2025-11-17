@@ -10,8 +10,11 @@ services:
       - postgres
       - kafka
       - minio
+      - redis
     environment:
       # Sobrescreve as configs do application.properties para rodar DENTRO da rede Docker
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       
       # Conecta ao container 'postgres' em vez de localhost
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ubiquitous_db
@@ -125,6 +128,23 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
+      # Serviço teste de Carga K6
+  k6:
+    image: grafana/k6:latest
+
+    volumes:
+        - ./tests:/scripts
+    extra_hosts:
+        - "host.docker.internal:host-gateway"
+    profiles: ["tools"]
+  redis:
+    image: redis:alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+
 
 volumes:
   postgres_data:

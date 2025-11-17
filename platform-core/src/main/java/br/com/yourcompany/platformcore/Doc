@@ -2,6 +2,11 @@ Subindo cluster: docker-compose up -d
 
 - rodar spring: mvnw spring-boot:run
 
+remover: - docker-compose down
+compilar: - docker-compose up -d --build
+
+vê log spring: docker logs platform_core_app
+
 
 
 
