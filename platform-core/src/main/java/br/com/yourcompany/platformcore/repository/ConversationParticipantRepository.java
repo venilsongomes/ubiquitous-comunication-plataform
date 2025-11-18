@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import br.com.yourcompany.platformcore.domain.Conversation.ConversationParticipant;
-import br.com.yourcompany.platformcore.domain.Conversation.ConversationParticipantId;
+import br.com.yourcompany.platformcore.domain.conversation.ConversationParticipant;
+import br.com.yourcompany.platformcore.domain.conversation.ConversationParticipantId;
 
 @Repository
 public interface ConversationParticipantRepository 

@@ -3,7 +3,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
-import br.com.yourcompany.platformcore.domain.Conversation.Conversation;
+import br.com.yourcompany.platformcore.domain.conversation.Conversation;
 import br.com.yourcompany.platformcore.domain.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,6 +41,9 @@ public class Message {
 
     @CreationTimestamp
     private Instant createdAt;
+    
+     @CreationTimestamp
+    private Instant sentAt;
 
 
     public Message(UUID id, Conversation conversation, User sender, String content) {
@@ -48,6 +51,7 @@ public class Message {
         this.conversation = conversation;
         this.sender = sender;
         this.content = content;
+        this.sentAt = sentAt;
     }
 
 

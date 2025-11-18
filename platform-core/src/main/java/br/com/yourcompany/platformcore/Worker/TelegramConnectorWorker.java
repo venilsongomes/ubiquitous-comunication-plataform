@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.Worker;
+package br.com.yourcompany.platformcore.worker;
 import org.springframework.kafka.support.KafkaHeaders; // <-- IMPORTAR
 import org.springframework.messaging.handler.annotation.Header; // <-- IMPORTAR
 import org.springframework.messaging.handler.annotation.Payload; // <-- IMPORTAR

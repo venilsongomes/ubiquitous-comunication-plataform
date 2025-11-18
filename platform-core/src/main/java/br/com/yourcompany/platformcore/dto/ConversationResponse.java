@@ -2,7 +2,7 @@ package br.com.yourcompany.platformcore.dto;
 
 import java.util.UUID;
 
-import br.com.yourcompany.platformcore.domain.Conversation.Conversation;
+import br.com.yourcompany.platformcore.domain.conversation.Conversation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import br.com.yourcompany.platformcore.domain.Conversation.Conversation;
+import br.com.yourcompany.platformcore.domain.conversation.Conversation;
 
 import java.util.Optional;
 import java.util.UUID;

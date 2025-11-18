@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.Worker;
+package br.com.yourcompany.platformcore.worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.Worker;
+package br.com.yourcompany.platformcore.worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,9 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import br.com.yourcompany.platformcore.domain.Conversation.Conversation;
-import br.com.yourcompany.platformcore.domain.Conversation.ConversationParticipant;
-import br.com.yourcompany.platformcore.domain.Conversation.ConversationType;
+
+import br.com.yourcompany.platformcore.domain.conversation.Conversation;
+import br.com.yourcompany.platformcore.domain.conversation.ConversationParticipant;
+import br.com.yourcompany.platformcore.domain.conversation.ConversationType;
 import br.com.yourcompany.platformcore.domain.message.Message;
 import br.com.yourcompany.platformcore.domain.user.User;
 import br.com.yourcompany.platformcore.domain.user.UserIdentity;

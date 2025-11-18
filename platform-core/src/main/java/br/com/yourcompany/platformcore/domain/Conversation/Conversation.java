@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.domain.Conversation;
+package br.com.yourcompany.platformcore.domain.conversation;
 import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;

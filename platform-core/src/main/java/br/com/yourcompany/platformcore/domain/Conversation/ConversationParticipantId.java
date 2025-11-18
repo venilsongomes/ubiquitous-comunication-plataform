@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.domain.Conversation;
+package br.com.yourcompany.platformcore.domain.conversation;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;

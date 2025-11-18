@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.domain.Conversation;
+package br.com.yourcompany.platformcore.domain.conversation;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

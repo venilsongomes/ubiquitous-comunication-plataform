@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.yourcompany.platformcore.grpc";
+option java_outer_classname = "PresenceProto";
+
+// O plugin vai gerar automaticamente a classe "PresenceServiceGrpc" baseada neste nome
+service PresenceService {
+  rpc IsUserOnline (UserPresenceRequest) returns (UserPresenceResponse);
+}
+
+message UserPresenceRequest {
+  string userId = 1;
+}
+
+message UserPresenceResponse {
+  bool isOnline = 1;
+  string lastSeen = 2;
+}

@@ -3,9 +3,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.yourcompany.platformcore.domain.Conversation.Conversation;
-import br.com.yourcompany.platformcore.domain.Conversation.ConversationParticipant;
-import br.com.yourcompany.platformcore.domain.Conversation.ConversationType;
+import br.com.yourcompany.platformcore.domain.conversation.Conversation;
+import br.com.yourcompany.platformcore.domain.conversation.ConversationParticipant;
+import br.com.yourcompany.platformcore.domain.conversation.ConversationType;
 import br.com.yourcompany.platformcore.domain.user.User;
 import br.com.yourcompany.platformcore.dto.ConversationResponse;
 import br.com.yourcompany.platformcore.dto.CreateConversationRequest;

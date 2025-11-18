@@ -1,5 +1,17 @@
-package br.com.yourcompany.platformcore.Worker;
-import jakarta.persistence.EntityNotFoundException;
+package br.com.yourcompany.platformcore.worker;
+import br.com.yourcompany.platformcore.domain.conversation.Conversation;
+import br.com.yourcompany.platformcore.domain.conversation.ConversationParticipant;
+import br.com.yourcompany.platformcore.domain.message.Message;
+import br.com.yourcompany.platformcore.domain.message.MessageRecipientStatus;
+import br.com.yourcompany.platformcore.domain.user.User;
+import br.com.yourcompany.platformcore.domain.user.UserIdentity;
+import br.com.yourcompany.platformcore.dto.InternalDeliveryEvent;
+import br.com.yourcompany.platformcore.dto.InternalMessageEvent;
+import br.com.yourcompany.platformcore.grpc.PresenceServiceGrpc; // <-- Classe gerada
+import br.com.yourcompany.platformcore.grpc.UserPresenceRequest; // <-- Classe gerada
+import br.com.yourcompany.platformcore.grpc.UserPresenceResponse;// <-- Classe gerada
+import br.com.yourcompany.platformcore.repository.*;
+import net.devh.boot.grpc.client.inject.GrpcClient; // <-- Anotação do Cliente
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,21 +19,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.com.yourcompany.platformcore.domain.Conversation.Conversation;
-import br.com.yourcompany.platformcore.domain.Conversation.ConversationParticipant;
-import br.com.yourcompany.platformcore.domain.message.Message;
-import br.com.yourcompany.platformcore.domain.message.MessageRecipientStatus;
-import br.com.yourcompany.platformcore.domain.user.User;
-import br.com.yourcompany.platformcore.domain.user.UserIdentity;
-import br.com.yourcompany.platformcore.dto.InternalMessageEvent;
-import br.com.yourcompany.platformcore.dto.InternalDeliveryEvent;
-import br.com.yourcompany.platformcore.repository.ConversationParticipantRepository;
-import br.com.yourcompany.platformcore.repository.ConversationRepository;
-import br.com.yourcompany.platformcore.repository.MessageRecipientStatusRepository;
-import br.com.yourcompany.platformcore.repository.MessageRepository;
-import br.com.yourcompany.platformcore.repository.UserIdentityRepository;
-import br.com.yourcompany.platformcore.repository.UserRepository;
-
 
 import java.util.List;
 
@@ -29,121 +26,89 @@ import java.util.List;
 public class MessageProcessingWorker {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageProcessingWorker.class);
-    @Autowired
-    private MessageRecipientStatusRepository messageRecipientStatusRepository;
 
-    // Tópicos que este worker produz
     private static final String TOPIC_INBOUND = "inbound_messages";
     private static final String TOPIC_OUT_INTERNAL = "internal_delivery";
-    private static final String TOPIC_OUT_TELEGRAM = "outgoing_telegram"; // <-- NOVO
+    private static final String TOPIC_OUT_TELEGRAM = "outgoing_telegram";
 
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
-
-    // Repositórios para salvar
+    @Autowired private KafkaTemplate<String, Object> kafkaTemplate;
     @Autowired private MessageRepository messageRepository;
     @Autowired private ConversationRepository conversationRepository;
     @Autowired private UserRepository userRepository;
-    
-    // Repositórios para rotear
-    @Autowired private ConversationParticipantRepository participantRepository; // <-- NOVO
-    @Autowired private UserIdentityRepository userIdentityRepository; // <-- NOV
+    @Autowired private ConversationParticipantRepository participantRepository;
+    @Autowired private UserIdentityRepository userIdentityRepository;
+    @Autowired private MessageRecipientStatusRepository recipientStatusRepository;
 
-    /**
-     * Novo método de ajuda para rotear uma mensagem para um único destinatário.
-     */
+    // --- O CLIENTE gRPC ---
+    // "presenceService" deve bater com o nome configurado no application.properties
+    @GrpcClient("presenceService") 
+    private PresenceServiceGrpc.PresenceServiceBlockingStub presenceClient;
 
-    private void routeMessageToRecipient(InternalMessageEvent event, User recipient, Message savedMessage) {
-
-        MessageRecipientStatus status = new MessageRecipientStatus(
-            savedMessage,
-            recipient,
-            "SENT" 
-    );
-        messageRecipientStatusRepository.save(status);
-
-        InternalDeliveryEvent deliveryEvent = new InternalDeliveryEvent(
-                event.getMessageId(),
-                event.getConversationId(),
-                event.getSenderId(),
-                event.getContent(),
-                event.getTimestamp(),
-                recipient.getId() // 2. Adicionar o ID do destinatário!
-        );
-
-        kafkaTemplate.send(TOPIC_OUT_INTERNAL, event.getConversationId().toString(), deliveryEvent);
-        logger.info("Msg {}: Roteada para Internal (WS) para user {}", event.getMessageId(), recipient.getId());
-
-        // ROTA 2: Entrega Externa (Telegram, etc.)
-        // Procuramos no DB por "endereços" externos para este usuário
-        List<UserIdentity> identities = userIdentityRepository.findByUserId(recipient.getId());
-
-        for (UserIdentity identity : identities) {
-            String platform = identity.getPlatform();
-            String externalId = identity.getExternalId(); // ex: Chat ID do Telegram
-            String topic;
-
-            switch (platform) {
-                case "telegram":
-                    topic = TOPIC_OUT_TELEGRAM;
-                    break;
-                // case "whatsapp":
-                //     topic = "outgoing_whatsapp";
-                //     break;
-                default:
-                    logger.warn("Roteamento para plataforma '{}' desconhecida.", platform);
-                    continue;
-            }
-
-            // Publicamos no tópico correto, usando o externalId (Chat ID) como CHAVE do Kafka.
-            // O nosso worker do conector (próximo passo) vai ler esta chave.
-            kafkaTemplate.send(topic, externalId, event);
-            logger.info("Msg {}: Roteada para {} (ID Externo: {})", 
-                    event.getMessageId(), platform, externalId);
-        }
-    }
-     @KafkaListener(topics = TOPIC_INBOUND, groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = TOPIC_INBOUND, groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     public void handleMessage(InternalMessageEvent event) {
-        logger.info("MENSAGEM RECEBIDA DO KAFKA! ID: {}", event.getMessageId());
-
         try {
-            // --- ETAPA 1: PERSISTIR A MENSAGEM (Como antes) ---
-            User sender = userRepository.findById(event.getSenderId())
-                    .orElseThrow(() -> new EntityNotFoundException("Remetente não encontrado: " + event.getSenderId()));
-            
-            Conversation conversation = conversationRepository.findById(event.getConversationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Conversa não encontrada: " + event.getConversationId()));
+            User sender = userRepository.findById(event.getSenderId()).orElseThrow();
+            Conversation conversation = conversationRepository.findById(event.getConversationId()).orElseThrow();
 
-            Message message = new Message(
-                    event.getMessageId(),
-                    conversation,
-                    sender,
-                    event.getContent()
-            );
+            Message message = new Message(event.getMessageId(), conversation, sender, event.getContent());
             Message savedMessage = messageRepository.save(message);
-            logger.info("Mensagem {} salva no banco de dados.", savedMessage.getId());
-
-
-            // 1. Encontrar todos os participantes da conversa
+            
             List<ConversationParticipant> participants = 
                     participantRepository.findByConversationId(event.getConversationId());
 
-            // 2. Para cada participante, rotear a mensagem
             for (ConversationParticipant participant : participants) {
-                
-                // 3. Não enviar a mensagem de volta para o remetente
-                if (participant.getUser().getId().equals(event.getSenderId())) {
-                    continue; 
-                }
-
                 User recipient = participant.getUser();
-                routeMessageToRecipient(event, recipient, message);
-            }
+                if (recipient.getId().equals(event.getSenderId())) continue;
 
+                routeMessageToRecipient(event, recipient, savedMessage);
+            }
         } catch (Exception e) {
-            logger.error("Erro ao processar a mensagem {}: {}", event.getMessageId(), e.getMessage());
-            // TODO: Enviar para uma Dead-Letter Queue (DLQ)
+            logger.error("Erro no processamento: ", e);
         }
+    }
+
+    private void routeMessageToRecipient(InternalMessageEvent event, User recipient, Message savedMessage) {
+        // 1. Salva status SENT
+        recipientStatusRepository.save(new MessageRecipientStatus(savedMessage, recipient, "SENT"));
+
+        // 2. CHECK gRPC: O usuário está online?
+        boolean isOnline = false;
+        try {
+            UserPresenceRequest request = UserPresenceRequest.newBuilder()
+                    .setUserId(recipient.getId().toString())
+                    .build();
+            
+            // --- CHAMADA REMOTA ---
+            UserPresenceResponse response = presenceClient.isUserOnline(request);
+            isOnline = response.getIsOnline();
+            
+            logger.info("gRPC Check: User {} está online? {}", recipient.getId(), isOnline);
+        } catch (Exception e) {
+            logger.error("Falha na chamada gRPC: {}", e.getMessage());
+        }
+
+        // 3. Se ONLINE -> Manda para WebSocket
+        if (isOnline) {
+            InternalDeliveryEvent deliveryEvent = new InternalDeliveryEvent(
+                event.getMessageId(), event.getConversationId(), event.getSenderId(),
+                event.getContent(), event.getTimestamp(), recipient.getId()
+            );
+            kafkaTemplate.send(TOPIC_OUT_INTERNAL, event.getConversationId().toString(), deliveryEvent);
+            logger.info(">> Roteado para WebSocket (Online)");
+        } else {
+            logger.info("XX Não roteado para WebSocket (Offline)");
+        }
+
+        // 4. Check de Identidades Externas (Telegram)
+        // ... (seu código do Telegram continua aqui) ...
+         List<UserIdentity> identities = userIdentityRepository.findByUserId(recipient.getId());
+         // ... (loop das identidades)
+         for (UserIdentity identity : identities) {
+             if ("telegram".equals(identity.getPlatform())) {
+                 kafkaTemplate.send(TOPIC_OUT_TELEGRAM, identity.getExternalId(), event);
+                 logger.info(">> Roteado para Telegram");
+             }
+         }
     }
 }

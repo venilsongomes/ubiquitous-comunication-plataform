@@ -48,7 +48,7 @@ public class RealtimeMessageHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         logger.info("Nova conexão WebSocket estabelecida: {}", session.getId());
         
-        UUID mockUserId = UUID.fromString("15aa1478-0e22-4458-8dc5-5e5b9dd588e8"); // <-- MUDE ISSO
+        UUID mockUserId = UUID.fromString("e9975207-33d1-40a8-a534-940f9f58a34b"); // <-- MUDE ISSO 6f5a0ce4-c802-4ebf-90c8-2f69520a1aa1
         
         UUID userId = mockUserId;
 
