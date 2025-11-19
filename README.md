@@ -112,5 +112,5 @@ Este teste valida a **Arquitetura v3 (gRPC + Redis)**.
 |Nome de Secret | Status Esperado |
 | :--- | :--- | :--- |
 | DOCKER_USERNAME  | Seu nome de user do docker Hub.|
-| DOCKER_PASSWORD  | Token do Docker Hub. |
+| DOCKER_PASSWORD  | Token do Docker Hub |
 
