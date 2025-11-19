@@ -109,11 +109,11 @@ Este teste valida a **Arquitetura v3 (gRPC + Redis)**.
 
 (Para que o passo de Login no Docker Hub funcione, você precisa configurar duas Secrets no seu repositório GitHub (Settings -> Secrets -> Actions) )
 
-|Nome de Secret  | Valor
-| :---    | :---
+|Nome de Secret  | Valor|
+| :---    | :---  |:---  |
 |           
-| **DOCKER_USERNAME     |      Seu nome de user do docker Hub.
-| **DOCKER_PASSWORD     |      Token do Docker Hub.
+| **DOCKER_USERNAME     |      Seu nome de user do docker Hub.|
+| **DOCKER_PASSWORD     |      Token do Docker Hub.|
 
 
 
