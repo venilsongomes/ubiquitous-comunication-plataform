@@ -102,18 +102,18 @@ Este teste valida a **Arquitetura v3 (gRPC + Redis)**.
 
 ---
 
-## 4. Pendências Finais (O que falta no MVP)
-
-* **Tarefa 3.2 - Upload de Arquivos:** O fluxo `POST /uploads/complete` ainda apresenta falhas de validação de `ETag` (S3Exception). O código de sanitização está correto, mas a falha é persistente devido a um bug no ambiente de teste MinIO.
+## 4. CI/CD
 
 * **Tarefa 4.3 - CI/CD:** Implementação de pipeline de entrega contínua via GitHub Actions, configurando o build e o push da imagem Docker para o Docker Hub.
 
 
 (Para que o passo de Login no Docker Hub funcione, você precisa configurar duas Secrets no seu repositório GitHub (Settings -> Secrets -> Actions) )
 
-## Nome de Secret             Valor
-  **DOCKER_USERNAME           Seu nome de user do docker Hub.
-  **DOCKER_PASSWORD           Token do Docker Hub.
+|Nome de Secret  | Valor
+| :---    | :---
+|           
+| **DOCKER_USERNAME     |      Seu nome de user do docker Hub.
+| **DOCKER_PASSWORD     |      Token do Docker Hub.
 
 
 
