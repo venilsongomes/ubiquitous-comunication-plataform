@@ -37,10 +37,17 @@ Docker e Docker Compose Instalados e em execução
 * Docker e Docker Compose instalados e em execução.
 * Java 21 ou superior para compilar o projeto.
 
-## Clone
+## 1. Clonar o Repositório e Navegart
+
+ 1. Clonar o Repositório e Navegart
+
+# 1. Clonar o repositório
+git clone SEU_REPOSITORIO_AQUI/ubiquitous-comunication-plataform.git
+
+ Navegar para a pasta raiz (onde está o docker-compose.yml)
+cd ubiquitous-comunication-plataform/
 
 ### Inicialização
-
 
 O projeto é iniciado com um único comando que constrói a aplicação Java e sobe toda a infraestrutura (DB, Kafka, MinIO, Prometheus, Grafana).
 
