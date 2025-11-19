@@ -132,13 +132,26 @@ public class AttachmentUploadService {
             // 2. Converter nossos DTOs para o formato que o SDK da AWS espera
             List<CompletedPart> awsParts = request.getParts().stream()
                     .map(part -> {
-                        // --- ESTA É A CORREÇÃO ---
-                        // Adiciona as aspas que o S3/MinIO espera
-                        String eTagComAspas = "\"" + part.getETag() + "\""; 
+                        String eTag = part.getETag();
+
+                        logger.info("LOG DE DEBUG: ETag recebido do DTO para Part {}: [{}]", part.getPartNumber(), eTag);
+
+                        // 1. Validação (se o cliente não enviou nada)
+                        if (eTag == null || eTag.isBlank()) {
+                            throw new IllegalArgumentException("O ETag não pode ser nulo ou vazio. Verifique o JSON.");
+                        }
+
+                        // 2. LIMPEZA: Remove quaisquer aspas que o usuário possa ter copiado
+                        // (Ex: "hash" -> hash)
+                        String cleanETag = eTag.replace("\"", ""); 
                         
+                        // 3. RE-FORMATAR: Adiciona as aspas que o S3/MinIO exige na chamada da API
+                        // (Ex: hash -> "hash")
+                        String finalETag = "\"" + cleanETag + "\""; 
+
                         return CompletedPart.builder()
                                 .partNumber(part.getPartNumber())
-                                .eTag(eTagComAspas) // <-- Envia o ETag formatado
+                                .eTag(finalETag) // <-- O ETag vai com as aspas para o S3
                                 .build();
                     })
                     .collect(Collectors.toList());
