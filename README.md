@@ -12,7 +12,7 @@ O sistema suporta:
 
 ---
 
-#1. Arquitetura Distribuida
+### 1. Arquitetura Distribuida
 
 A plataforma utiliza um modelo de Arquitetura Orientada a Eventos (EDA) para garantir a resiliência e o desacoplamento dos serviços.
 
@@ -37,7 +37,7 @@ Docker e Docker Compose Instalados e em execução
 * Docker e Docker Compose instalados e em execução.
 * Java 21 ou superior para compilar o projeto.
 
-# 1. Clonar o repositório
+### 1. Clonar o repositório
 git clone SEU_REPOSITORIO_AQUI/ubiquitous-comunication-plataform.git
 
 Navegar para a pasta raiz (onde está o docker-compose.yml)
