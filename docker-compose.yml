@@ -18,6 +18,8 @@ services:
       
       # Conecta ao container 'postgres' em vez de localhost
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ubiquitous_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
       
       # Conecta ao container 'kafka' na porta INTERNA (9092)
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -32,8 +34,8 @@ services:
     image: postgres:15
     container_name: db_postgres
     environment:
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: password
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: ubiquitous_db
     ports:
       - "5432:5432"

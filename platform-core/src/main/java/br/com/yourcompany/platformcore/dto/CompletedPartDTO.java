@@ -14,6 +14,6 @@ public class CompletedPartDTO {
    @JsonProperty("partNumber")
     private int partNumber;
 
-    @JsonProperty("Etag")
+    @JsonProperty("eTag")
     private String eTag; // O "recibo" que o MinIO devolveu para o cliente
 }
