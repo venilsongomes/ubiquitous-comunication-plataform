@@ -12,8 +12,8 @@ O sistema suporta:
 * **Entrega em Tempo**  Real via WebSocket.
 * **Gerenciamento de Presença** (ONLINE / OFFLINE) via Redis + gRPC.
 * **Arquitetura Assíncrona**  com Kafka para resiliência e desacoplamento.
-**Upload Multipart para S3/MinIO.**
-  **Documentação via OpenAPI**
+* **Upload Multipart para S3/MinIO.**
+* **Documentação via OpenAPI**
 
 ---
 
