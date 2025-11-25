@@ -98,7 +98,101 @@ Este teste valida a **Arquitetura v3 (gRPC + Redis)**.
     `INFO [...] Status da Msg ... atualizado para DELIVERED`
     A mensagem **aparecerá instantaneamente** no seu PieSocket.
 
-### C. Download de Histórico
+### C. Upload de Arquivos para S3 (MinIO)
+
+Este fluxo demonstra o upload multipart de arquivos para o object storage MinIO (compatível com S3).
+
+#### PowerShell - Fluxo Completo
+
+```powershell
+# 1. FAZER LOGIN E OBTER TOKEN
+$loginResponse = curl.exe -X POST http://localhost:8080/api/v1/auth/login `
+    -H "Content-Type: application/json" `
+    -d '{\"username\":\"tester\",\"password\":\"123\"}' | ConvertFrom-Json
+
+$token = $loginResponse.token
+
+# 2. INICIAR UPLOAD
+$body1 = @{
+    filename = "teste-final.txt"
+    mimeType = "text/plain"
+    fileSize = 1024
+} | ConvertTo-Json
+
+$response1 = Invoke-WebRequest `
+    -Uri "http://localhost:8080/api/v1/uploads/initiate" `
+    -Method POST `
+    -Headers @{"Content-Type"="application/json"; "Authorization"="Bearer $token"} `
+    -Body $body1
+
+$uploadData = $response1.Content | ConvertFrom-Json
+
+# 3. FAZER UPLOAD DO ARQUIVO
+$presignedUrl = $uploadData.presignedUrls[0]
+$fileContent = "Este e um teste de upload para o MinIO!"
+
+$response2 = Invoke-WebRequest -Uri $presignedUrl -Method PUT -Body $fileContent
+$eTag = $response2.Headers.ETag -replace '"', ''
+
+# 4. COMPLETAR UPLOAD
+$attachmentId = $uploadData.attachmentId
+
+$body3 = @{
+    parts = @(
+        @{
+            partNumber = 1
+            eTag = $eTag
+        }
+    )
+} | ConvertTo-Json -Depth 3
+
+$response3 = Invoke-WebRequest `
+    -Uri "http://localhost:8080/api/v1/uploads/$attachmentId/complete" `
+    -Method POST `
+    -Headers @{"Content-Type"="application/json"; "Authorization"="Bearer $token"} `
+    -Body $body3
+
+Write-Host "Upload completo! Status: $($response3.StatusCode)"
+```
+
+#### Bash/cURL - Fluxo Completo
+
+```bash
+# 1. FAZER LOGIN E OBTER TOKEN
+TOKEN=$(curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"tester","password":"123"}' | jq -r '.token')
+
+# 2. INICIAR UPLOAD
+UPLOAD_DATA=$(curl -X POST http://localhost:8080/api/v1/uploads/initiate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"filename":"teste-final.txt","mimeType":"text/plain","fileSize":1024}')
+
+ATTACHMENT_ID=$(echo $UPLOAD_DATA | jq -r '.attachmentId')
+PRESIGNED_URL=$(echo $UPLOAD_DATA | jq -r '.presignedUrls[0]')
+
+# 3. FAZER UPLOAD DO ARQUIVO
+ETAG=$(curl -X PUT "$PRESIGNED_URL" \
+  -H "Content-Type: text/plain" \
+  -d "Este e um teste de upload para o MinIO!" \
+  -i | grep -i etag | awk '{print $2}' | tr -d '\r"')
+
+# 4. COMPLETAR UPLOAD
+curl -X POST "http://localhost:8080/api/v1/uploads/$ATTACHMENT_ID/complete" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{\"parts\":[{\"partNumber\":1,\"eTag\":\"$ETAG\"}]}"
+```
+
+#### Verificar no MinIO Console
+
+Após o upload, você pode visualizar o arquivo:
+* **MinIO Console:** `http://localhost:9001`
+* **Login:** `minioadmin` / `minioadmin123`
+* **Bucket:** `ubiquitous-attachments`
+
+### D. Download de Histórico
 
 * **Endpoint:** `GET /api/v1/conversations/{id}/messages`
 * **Ação:** Use o token JWT e o ID da conversa. Você receberá a lista de mensagens paginadas do PostgreSQL.
