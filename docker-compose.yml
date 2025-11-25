@@ -1,35 +1,33 @@
 version: '3.8'
+
 services:
-  # --- SEU NOVO SERVIÇO JAVA ---
+
+  # --- Serviço Java ---
   app:
-    build: ./platform-core  # Constrói usando o Dockerfile na pasta atual
+    build: ./platform-core
     container_name: platform_core_app
     ports:
-      - "8080:8080" # Expõe a porta 8080 para o seu Windows
+      - "8080:8080"
     depends_on:
       - postgres
       - kafka
       - minio
       - redis
     environment:
-      # Sobrescreve as configs do application.properties para rodar DENTRO da rede Docker
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-      
-      # Conecta ao container 'postgres' em vez de localhost
+
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ubiquitous_db
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: password
-      
-      # Conecta ao container 'kafka' na porta INTERNA (9092)
+
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      
-      # Conecta ao container 'minio'
+
       MINIO_ENDPOINT: http://minio:9000
-      
-      # Configurações de segurança (passamos aqui para não ficarem hardcoded na imagem)
-      # (Copie a chave que você gerou no passo anterior ou use uma variável de ambiente do sistema)
+
       APPLICATION_SECURITY_JWT_SECRET_KEY: n3/A0c3c2h1L2s4L3k0c3U2YjcvZDg/Z0grTWFuZCFBJUQoRylKQE5jUWZUalgmcE4=
+
+  # --- POSTGRES ---
   postgres:
     image: postgres:15
     container_name: db_postgres
@@ -47,6 +45,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # --- ZOOKEEPER ---
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -54,76 +53,67 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
+  # --- KAFKA ---
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     depends_on:
       - zookeeper
     ports:
-      # Expõe a porta EXTERNA 29092 para o seu Windows (Host)
       - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      
-      # --- Configuração Híbrida de Listeners ---
-      # 1. Mapeia os nomes dos listeners para os protocolos
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      
-      # 2. Quais portas o Kafka deve "ouvir" DENTRO do contêiner
-      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29092
-      
-      # 3. Quais endereços o Kafka deve "anunciar" para o mundo
+
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
-      
-      # 4. Qual listener os outros brokers devem usar para se comunicar
+
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      # --- Fim da Configuração ---
-      
+
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
-      # --- ADICIONE O SERVIÇO ABAIXO ---
-
+  # --- PROMETHEUS ---
   prometheus:
-      image: prom/prometheus:latest
-      container_name: prometheus
-      ports:
-        - "9090:9090" # Porta da UI do Prometheus
-      volumes:
-        # Monta nosso arquivo de configuração para dentro do contêiner
-        - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-        # Monta um volume para persistir os dados das métricas
-        - prometheus_data:/prometheus
-      command:
-        - '--config.file=/etc/prometheus/prometheus.yml'
-      depends_on:
-        - app
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - app
 
+  # --- GRAFANA ---
   grafana:
     image: grafana/grafana-oss:latest
     container_name: grafana
     ports:
-      - "3000:3000" # Porta da UI do Grafana
+      - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
+
+  # --- MINIO ---
   minio:
-    image: minio/minio:latest # Use uma imagem recente
+    image: minio/minio:latest
     container_name: minio_storage
     ports:
-      - "9000:9000" # Porta da API S3
-      - "9001:9001" # Porta do Console Web
+      - "9000:9000"
+      - "9001:9001"
     environment:
-      # Credenciais de admin. GUARDE-AS!
-      MINIO_ROOT_USER: minioadmin 
+      MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     volumes:
       - minio_data:/data
-    # Comando para iniciar o servidor e o console
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD-SHELL", "mc ready local"]
@@ -131,15 +121,16 @@ services:
       timeout: 20s
       retries: 3
 
-      # Serviço teste de Carga K6
+  # --- K6 (teste de carga) ---
   k6:
     image: grafana/k6:latest
-
     volumes:
-        - ./tests:/scripts
+      - ./tests:/scripts
     extra_hosts:
-        - "host.docker.internal:host-gateway"
+      - "host.docker.internal:host-gateway"
     profiles: ["tools"]
+
+  # --- REDIS ---
   redis:
     image: redis:alpine
     container_name: redis_cache
@@ -147,7 +138,29 @@ services:
       - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
 
+  # --- Instagram Mock ---
+  instagram_mock:
+    build: ./connectors/connector_instagram_mock
+    container_name: instagram_mock
+    ports:
+      - "3002:3002"
+    environment:
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      - kafka
 
+  # --- WhatsApp Mock ---
+  whatsapp_mock:
+    build: ./connectors/connector_whatsapp_mock
+    container_name: whatsapp_mock
+    ports:
+      - "3001:3001"
+    environment:
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      - kafka
+
+# --- Volumes ---
 volumes:
   postgres_data:
   minio_data:

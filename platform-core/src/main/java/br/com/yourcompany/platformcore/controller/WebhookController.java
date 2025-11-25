@@ -33,4 +33,24 @@ public class WebhookController {
         // que já tem o método 'onUpdateReceived' pronto!
         telegramService.onUpdateReceived(update);
     }
+    
+    @PostMapping("/instagram")
+    public void handleInstagramWebhook(@RequestBody(required = false) java.util.Map<String, Object> payload) {
+        if (payload == null) {
+            logger.warn("Webhook do Instagram recebeu payload nulo.");
+            return;
+        }
+        logger.info("Webhook do Instagram recebido: {}", payload);
+        // Aqui você pode encaminhar para o worker ou serviço responsável
+    }
+    
+    @PostMapping("/whatsapp")
+    public void handleWhatsappWebhook(@RequestBody(required = false) java.util.Map<String, Object> payload) {
+        if (payload == null) {
+            logger.warn("Webhook do WhatsApp recebeu payload nulo.");
+            return;
+        }
+        logger.info("Webhook do WhatsApp recebido: {}", payload);
+        // Aqui você pode encaminhar para o worker ou serviço responsável
+    }
 }

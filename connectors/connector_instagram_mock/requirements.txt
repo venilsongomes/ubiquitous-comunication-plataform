@@ -1,2 +1,4 @@
+
 flask
-kafka-python
+confluent-kafka
+requests

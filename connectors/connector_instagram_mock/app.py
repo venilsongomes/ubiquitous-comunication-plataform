@@ -3,10 +3,12 @@ from confluent_kafka import Consumer, Producer
 import threading
 import json
 import time
+import os
+import requests
 
 app = Flask(__name__)
 
-KAFKA_BROKER = "localhost:29092"
+KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "localhost:29092")
 # Tópico de entrada que o Worker Java irá usar para o Instagram
 TOPIC_IN = "msg_instagram_outbound"
 # Tópico de saída para callbacks de status
@@ -19,6 +21,14 @@ def delivery_report(err, msg):
         print(f"❌ Erro ao enviar callback: {err}")
     else:
         print(f"✅ Callback enviado para {msg.topic()} [{msg.partition()}]")
+
+def send_to_worker(payload):
+    url = "http://localhost:8080/api/v1/webhooks/instagram"  # ajuste a porta se necessário
+    try:
+        response = requests.post(url, json=payload)
+        print("Enviado para worker:", response.status_code, response.text)
+    except Exception as e:
+        print("Erro ao enviar para worker:", e)
 
 def consume_messages():
     consumer = Consumer({
@@ -43,6 +53,9 @@ def consume_messages():
         message_id = f"mock_{int(time.time() * 1000)}" 
 
         print(f"[Instagram] Mensagem recebida para usuário {user_id}: \"{text}\"")
+
+        # Envia para o worker Java via HTTP
+        send_to_worker(payload)
 
         time.sleep(2) 
         delivered_callback = {
@@ -84,6 +97,17 @@ def simulate_instagram():
     except Exception as e:
         print("❌ Erro no endpoint:", e)
         return jsonify({"error": str(e)}), 500
+
+# Novo endpoint para enviar mensagem via mock
+@app.route("/send_message", methods=["POST"])
+def send_message():
+    data = request.get_json(silent=True)
+    if data is None:
+        return jsonify({"error": "JSON malformado."}), 400
+
+    print("[Instagram] Mensagem recebida via /send_message:", data)
+    send_to_worker(data)
+    return jsonify({"ok": True, "message": "Mensagem enviada para o worker"})
 
 
 if __name__ == "__main__":

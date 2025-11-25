@@ -3,10 +3,12 @@ from confluent_kafka import Consumer, Producer
 import threading
 import json
 import time
+import os
+import requests
 
 app = Flask(__name__)
 
-KAFKA_BROKER = "localhost:29092"
+KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "localhost:29092")
 TOPIC_IN = "msg_whatsapp_outbound"
 TOPIC_OUT = "status_updates"
 
@@ -17,6 +19,14 @@ def delivery_report(err, msg):
         print(f"❌ Erro ao enviar callback: {err}")
     else:
         print(f"✅ Callback enviado para {msg.topic()} [{msg.partition()}]")
+
+def send_to_worker(payload):
+    url = "http://localhost:8080/api/v1/webhooks/whatsapp"  # ajuste a porta se necessário
+    try:
+        response = requests.post(url, json=payload)
+        print("Enviado para worker:", response.status_code, response.text)
+    except Exception as e:
+        print("Erro ao enviar para worker:", e)
 
 def consume_messages():
     consumer = Consumer({
@@ -38,12 +48,14 @@ def consume_messages():
         user_id = payload.get("userId")
         text = payload.get("text")
 
-        print(f"[Instagram] Mensagem recebida para usuário {user_id}: \"{text}\"")
+        print(f"[WhatsApp] Mensagem recebida para usuário {user_id}: \"{text}\"")
+
+        # Envia para o worker Java via HTTP
+        send_to_worker(payload)
 
         # Simula atraso de 2 segundos para a entrega
         time.sleep(2) 
         delivered_callback = {
-            # CORRIGIDO o nome do canal
             "channel": "whatsapp",
             "userId": user_id,
             "status": "delivered"
@@ -69,8 +81,19 @@ def simulate_whatsapp():
     producer.produce(TOPIC_IN, json.dumps(data).encode("utf-8"), callback=delivery_report)
     return jsonify({"ok": True, "message": "Mensagem simulada enviada para WhatsApp"})
 
+# Novo endpoint para enviar mensagem via mock
+@app.route("/send_message", methods=["POST"])
+def send_message():
+    data = request.get_json(silent=True)
+    if data is None:
+        return jsonify({"error": "JSON malformado."}), 400
+
+    print("[WhatsApp] Mensagem recebida via /send_message:", data)
+    send_to_worker(data)
+    return jsonify({"ok": True, "message": "Mensagem enviada para o worker"})
+
 if __name__ == "__main__":
     # Thread para consumir mensagens
     t = threading.Thread(target=consume_messages, daemon=True)
     t.start()
-    app.run(port=3001)
+    app.run(host="0.0.0.0", port=3001)
