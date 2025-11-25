@@ -13,6 +13,7 @@ O sistema suporta:
 * **Gerenciamento de Presença** (ONLINE / OFFLINE) via Redis + gRPC.
 * **Arquitetura Assíncrona**  com Kafka para resiliência e desacoplamento.
 **Upload Multipart para S3/MinIO.**
+  **Documentação via OpenAPI**
 
 ---
 
@@ -332,5 +333,9 @@ docker logs connector_whatsapp_mock -f
 Você pode acessar os dashboards de monitoramento para ver a saúde do sistema:
 * **Prometheus UI:** `http://localhost:9090/targets`
 * **Grafana UI:** `http://localhost:3000` (Login: `admin` / `admin`)
+
+## 7. Documentação OpenAPI
+* Vc poderar consultar a documentaçõ acessando
+**http://localhost:8080/swagger-ui/index.html**
 
 
