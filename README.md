@@ -211,3 +211,124 @@ Após o upload, você pode visualizar o arquivo:
 | DOCKER_USERNAME  | Seu nome de user do docker Hub.|
 | DOCKER_PASSWORD  | Token do Docker Hub |
 
+---
+
+Abaixo está **um passo a passo claro, profissional e direto** para colocar no seu README, explicando como rodar os containers dos conectores (Instagram/WhatsApp) e como enviar a requisição de teste usando `Invoke-WebRequest` no PowerShell.
+
+Você pode copiar e colar exatamente como está.
+
+---
+
+# 5. Connectores Instagram / WhatsApp
+
+Este guia explica como rodar os containers mockados dos conectores e testar o fluxo enviando uma mensagem simulada.
+
+---
+
+##  **1. Certifique-se que o Kafka está rodando**
+
+Se estiver usando Docker Compose:
+
+```powershell
+docker-compose up -d kafka zookeeper
+```
+
+---
+
+##  **2. Suba os containers dos connectors**
+
+Eles devem estar rodando antes de enviar as mensagens.
+
+### Conector Instagram
+
+```powershell
+docker-compose up -d connector_instagram_mock
+```
+
+### Conector WhatsApp
+
+```powershell
+docker-compose up -d connector_whatsapp_mock
+```
+
+Verifique se subiram:
+
+```powershell
+docker ps
+```
+
+---
+
+##  **3. Enviar mensagens simuladas via HTTP**
+
+Cada conector mock expõe um endpoint HTTP que simula o envio de uma mensagem para a plataforma.
+
+###  Instagram Mock — Porta **3002**
+
+Exemplo usando PowerShell:
+
+```powershell
+Invoke-WebRequest `
+  -Uri "http://localhost:3002/send_message" `
+  -Method POST `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"message": "Hello from Instagram"}'
+```
+
+---
+
+###  WhatsApp Mock — Porta **3001**
+
+```powershell
+Invoke-WebRequest `
+  -Uri "http://localhost:3001/send_message" `
+  -Method POST `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"message": "Hello from WhatsApp"}'
+```
+
+---
+
+##  **4. O que deve acontecer**
+
+Quando você chamar `/send_message`, o fluxo será:
+
+```
+HTTP → Connector Mock → Kafka (msg_*_outbound) → Worker → Kafka → Connector → Kafka (status_updates) → Core App
+```
+
+Nos logs do container, você verá:
+
+* Conector recebendo a mensagem simulada
+* Worker processando
+* Status "DELIVERED" e "READ" sendo enviados
+* Callbacks GRPC retornando para o servidor
+
+---
+
+##  **5. Logs importantes**
+
+###  Ver logs do Instagram:
+
+```powershell
+docker logs connector_instagram_mock -f
+```
+
+###  Ver logs do WhatsApp:
+
+```powershell
+docker logs connector_whatsapp_mock -f
+```
+
+---
+
+##  Observações importantes
+
+* Os containers dos conectores **precisam estar rodando** antes de executar o `Invoke-WebRequest`.
+* As portas devem corresponder às definidas no projeto (`3002` para Instagram, `3001` para WhatsApp).
+* Esse endpoint é apenas para **simulação de mensagem INBOUND** (vinda da rede social para a plataforma).
+* Mensagens OUTBOUND (da plataforma para o conector) fluem via Kafka apenas.
+
+---
+
+
