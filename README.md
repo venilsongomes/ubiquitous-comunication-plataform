@@ -202,7 +202,7 @@ Você pode copiar e colar exatamente como está.
 
 ---
 
-# 4. Connectores Instagram / WhatsApp
+## 4. Connectores Instagram / WhatsApp
 Este guia explica como rodar os containers mockados dos conectores e testar o fluxo enviando uma mensagem simulada.
 
 ---
@@ -327,7 +327,8 @@ docker logs connector_whatsapp_mock -f
 
 ---
 
-##6. Observabilidade e Monitoramento
+## 6. Observabilidade e Monitoramento
+
 Você pode acessar os dashboards de monitoramento para ver a saúde do sistema:
 * **Prometheus UI:** `http://localhost:9090/targets`
 * **Grafana UI:** `http://localhost:3000` (Login: `admin` / `admin`)
