@@ -335,7 +335,7 @@ Você pode acessar os dashboards de monitoramento para ver a saúde do sistema:
 * **Grafana UI:** `http://localhost:3000` (Login: `admin` / `admin`)
 
 ## 7. Documentação OpenAPI
-* Vc poderar consultar a documentaçõ acessando
-**http://localhost:8080/swagger-ui/index.html**
+* Vc poderar consultar a documentação acessando
+* **http://localhost:8080/swagger-ui/index.html**
 
 
