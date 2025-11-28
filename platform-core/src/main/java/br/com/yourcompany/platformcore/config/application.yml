@@ -1,0 +1,161 @@
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  packages-to-scan:
+    - br.com.yourcompany.platformcore.controller
+    - br.com.yourcompany.platformcore.connectors
+  use-hal-controller: false
+  enable-hateoas: false
+
+
+  openapi: 3.1.0
+info:
+  title: Ubiquitous Communication Platform API
+  version: 1.0.0
+  description: |
+    Documentação da API da plataforma de comunicação.
+    Esta documentação foi gerada e refinada automaticamente.
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local
+
+tags:
+  - name: Health
+    description: Endpoints de verificação e monitoramento.
+  - name: Connectors
+    description: Conectores externos: WhatsApp, SMS, SMTP, etc.
+  - name: Messages
+    description: Gerenciamento e envio de mensagens.
+  - name: Users
+    description: Gestão de usuários da plataforma.
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Verifica se a API está ativa.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Serviço operacional.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /messages:
+    post:
+      tags: [Messages]
+      summary: Envia uma mensagem usando o conector padrão.
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '202':
+          description: Mensagem enviada para processamento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Requisição inválida.
+
+  /messages/{id}:
+    get:
+      tags: [Messages]
+      summary: Consulta status de uma mensagem.
+      operationId: getMessageStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da mensagem gerado no envio.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageStatusResponse'
+        '404':
+          description: Mensagem não encontrada.
+
+  /connectors:
+    get:
+      tags: [Connectors]
+      summary: Lista todos os conectores configurados.
+      operationId: listConnectors
+      responses:
+        '200':
+          description: Lista de conectores.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Connector'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: UP
+
+    SendMessageRequest:
+      type: object
+      required: [to, message, channel]
+      properties:
+        to:
+          type: string
+          example: "+5511999999999"
+        message:
+          type: string
+          example: "Seu código é 123456"
+        channel:
+          type: string
+          enum: [whatsapp, sms, email]
+
+    MessageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "msg_91as81b1ab81"
+        status:
+          type: string
+          example: "QUEUED"
+
+    MessageStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [QUEUED, SENT, DELIVERED, FAILED]
+        timestamp:
+          type: string
+          format: date-time
+
+    Connector:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [whatsapp, sms, email, push]
+        enabled:
+          type: boolean
+
