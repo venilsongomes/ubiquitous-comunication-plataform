@@ -5,10 +5,15 @@
 Este projeto é uma **Plataforma de Mensageria Distribuída** construída para demonstrar princípios de arquitetura moderna, escalabilidade horizontal e comunicação assíncrona/síncrona (Hybrid Architecture).
 
 O sistema suporta:
-* **Comunicação Bidirecional:** Receber e enviar mensagens para canais externos (Telegram).
+* **Comunicação Bidirecional:** Receber e enviar mensagens(ex: Telegram, Instagram, WhatsApp).
 * **Tempo Real:** Entrega via WebSocket e controle de presença (`ONLINE`/`OFFLINE`).
 * **Segurança:** Autenticação via JWT (JSON Web Tokens).
-* **Observabilidade:** Monitoramento de saúde e performance via Prometheus e Grafana.
+* **Observabilidade:** Observabilidade Completa com Prometheus + Grafana + métricas customizadas.
+* **Entrega em Tempo**  Real via WebSocket.
+* **Gerenciamento de Presença** (ONLINE / OFFLINE) via Redis + gRPC.
+* **Arquitetura Assíncrona**  com Kafka para resiliência e desacoplamento.
+* **Upload Multipart para S3/MinIO.**
+* **Documentação via OpenAPI**
 
 ---
 
@@ -26,24 +31,20 @@ A plataforma utiliza um modelo de Arquitetura Orientada a Eventos (EDA) para gar
 | **Presence Service** | Armazenamento de estado de presença (`ONLINE`/`OFFLINE`). | **Redis** (Consultado via gRPC) |
 | **Object Storage** | Armazenamento de arquivos grandes (fotos, vídeos). | **MinIO** (S3-Compatível) |
 | **Real-time Handler** | Entrega mensagens para o cliente Web via conexão WebSocket. | Spring WebSocket |
-
+| **Connector Mocks** |Simuladores de canais externos (WhatsApp / Instagram)| python |
 
 ## 2. Configuração e Execução( Getting Started)
 
 ## Pré requisitos
 
-Docker e Docker Compose Instalados e em execução
-
-* Docker e Docker Compose instalados e em execução.
-* Java 21 ou superior para compilar o projeto.
+*Docker e Docker Compose instalados
+*Java 21+ para build local da plataforma
+*PowerShell ou Bash para testes de upload
 
 ### 1. Clonar o repositório
 git clone SEU_REPOSITORIO_AQUI/ubiquitous-comunication-plataform.git
 
-Navegar para a pasta raiz (onde está o docker-compose.yml)
-cd ubiquitous-comunication-plataform/
-
-### Inicialização
+### 2. Subir toda a infraestrutura
 
 O projeto é iniciado com um único comando que constrói a aplicação Java e sobe toda a infraestrutura (DB, Kafka, MinIO, Prometheus, Grafana).
 
@@ -53,12 +54,6 @@ O projeto é iniciado com um único comando que constrói a aplicação Java e s
     ```
 2.  **Verifique a Saúde:** Após ~60 segundos, todos os contêineres devem estar rodados (`docker ps`).
 3.  **Logs:** Monitore a aplicação Java: `docker logs -f platform_core_app`
-
-
-### Observabilidade e Monitoramento
-Você pode acessar os dashboards de monitoramento para ver a saúde do sistema:
-* **Prometheus UI:** `http://localhost:9090/targets`
-* **Grafana UI:** `http://localhost:3000` (Login: `admin` / `admin`)
 
 ---
 
@@ -183,6 +178,9 @@ curl -X POST "http://localhost:8080/api/v1/uploads/$ATTACHMENT_ID/complete" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d "{\"parts\":[{\"partNumber\":1,\"eTag\":\"$ETAG\"}]}"
+
+#5. REALIZAR O DAWLOADS
+curl -X GET "http://localhost:8080/api/v1/uploads/{ATTACHMENT_ID}/download"
 ```
 
 #### Verificar no MinIO Console
@@ -199,28 +197,13 @@ Após o upload, você pode visualizar o arquivo:
 
 ---
 
-## 4. CI/CD
-
-* **Tarefa 4.3 - CI/CD:** Implementação de pipeline de entrega contínua via GitHub Actions, configurando o build e o push da imagem Docker para o Docker Hub.
-
-
-(Para que o passo de Login no Docker Hub funcione, você precisa configurar duas Secrets no seu repositório GitHub (Settings -> Secrets -> Actions) )
-
-|Nome de Secret | Status Esperado |
-| :--- | :--- |
-| DOCKER_USERNAME  | Seu nome de user do docker Hub.|
-| DOCKER_PASSWORD  | Token do Docker Hub |
-
----
-
 Abaixo está **um passo a passo claro, profissional e direto** para colocar no seu README, explicando como rodar os containers dos conectores (Instagram/WhatsApp) e como enviar a requisição de teste usando `Invoke-WebRequest` no PowerShell.
 
 Você pode copiar e colar exatamente como está.
 
 ---
 
-# 5. Connectores Instagram / WhatsApp
-
+## 4. Connectores Instagram / WhatsApp
 Este guia explica como rodar os containers mockados dos conectores e testar o fluxo enviando uma mensagem simulada.
 
 ---
@@ -330,5 +313,28 @@ docker logs connector_whatsapp_mock -f
 * Mensagens OUTBOUND (da plataforma para o conector) fluem via Kafka apenas.
 
 ---
+
+## 5. CI/CD
+
+* **Tarefa 4.3 - CI/CD:** Implementação de pipeline de entrega contínua via GitHub Actions, configurando o build e o push da imagem Docker para o Docker Hub.
+
+
+(Para que o passo de Login no Docker Hub funcione, você precisa configurar duas Secrets no seu repositório GitHub (Settings -> Secrets -> Actions) )
+
+|Nome de Secret | Status Esperado |
+| :--- | :--- |
+| DOCKER_USERNAME  | Seu nome de user do docker Hub.|
+| DOCKER_PASSWORD  | Token do Docker Hub |
+
+---
+
+## 6. Observabilidade e Monitoramento
+
+Você pode acessar os dashboards de monitoramento para ver a saúde do sistema:
+* **Prometheus UI:** `http://localhost:9090/targets`
+* **Grafana UI:** `http://localhost:3000` (Login: `admin` / `admin`)
+
+## 7. Documentação OpenAPI
+* Vc poderar consultar a documentação acessando **http://localhost:8080/swagger-ui/index.html**
 
 
