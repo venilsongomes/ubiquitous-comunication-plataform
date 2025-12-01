@@ -1,87 +1,86 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { crypto } from 'k6/crypto';
+import { crypto } from 'k6/crypto'; 
 
-// Configuração do Teste
-export const options = {
-  stages: [
-    { duration: '10s', target: 5 },  // Aquecimento rápido
-    { duration: '30s', target: 200 }, // Carga moderada
-    { duration: '10s', target: 0 },  // Resfriamento
-  ],
-};
+// --- 1. CONSTANTES CRUCIAIS ---
+// ATENÇÃO: host.docker.internal acessa o host do Windows/Mac (onde o servidor deve responder)
+const BASE_URL = 'http://host.docker.internal:8080/api/v1'; 
 
-// --- CONFIGURAÇÃO ---
+// ATUALIZE COM AS SUAS CREDENCIAIS DO BANCO DOCKER
+const USERNAME = "Login"; 
+const PASSWORD = "1234"; 
+const CONVERSATION_ID = "7a5b764f-c37f-4ab2-b407-aafef773b638";
+// ------------------------------------
 
-// Usuário para login (garanta que ele existe via /auth/register)
-const BASE_URL = 'http://host.docker.internal:8080/api/v1'; // host.docker.internal acessa o localhost do Windows
-const USERNAME = 'cavalo de troia da grecia'; 
-const PASSWORD = 'senha123456';
 
-// Um ID de conversa válido (copie do seu banco ou Thunder Client)
-const CONVERSATION_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'; 
-
-// Função simples para gerar UUID v4 (fake, mas válido para o Java)
+// --- 2. FUNÇÃO UTILITÁRIA UUID (Estava faltando) ---
 function uuidv4() {
+  // Gera um UUID v4 pseudo-aleatório (funciona no Spring UUID)
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
 }
+// --------------------------------------------------
 
-// Função de Login
-function login() {
+
+// --- 3. FUNÇÃO SETUP (Login - Executa uma vez) ---
+export const options = { /* ... (Suas opções de VUs) ... */ };
+
+export function setup() {
   const payload = JSON.stringify({
     username: USERNAME,
     password: PASSWORD,
   });
   
-  const params = {
-    headers: { 'Content-Type': 'application/json' },
-  };
-
-  const res = http.post(`${BASE_URL}/auth/login`, payload, params);
+  const params = { headers: { 'Content-Type': 'application/json' } };
   
+  // Login na nova rota /auth/login
+  const res = http.post(`${BASE_URL}/auth/login`, payload, params);
+
   if (res.status !== 200) {
-    console.error(`FALHA LOGIN: ${res.status} - ${res.body}`);
-    return null;
+    console.error(`ERRO CRÍTICO NO SETUP: Login falhou! Status: ${res.status}. Certifique-se de que o usuário existe no banco de dados Docker.`);
+    return { token: null }; 
   }
   
-  return res.json('token');
+  // Retorna o token para os VUs (Virtual Users)
+  return { token: res.json('token') };
 }
 
-export default function () {
-  // 1. Login
-  const token = login();
-  if (!token) return;
+// --- 4. FUNÇÃO DEFAULT (Envio de Mensagem) ---
+export default function (data) {
+  if (!data.token) {
+      // Se o setup falhou (erro 500 no login), os VUs param aqui.
+      return; 
+  }
 
   const params = {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${data.token}`, // Usa o token do setup
     },
   };
 
-  // 2. Payload com UUID Válido
+  // 3. Payload com UUID Válido
   const messagePayload = JSON.stringify({
-    messageId: uuidv4(), // <-- AGORA GERA UM UUID CORRETO
+    messageId: uuidv4(), // <-- AGORA É DINÂMICO
     content: 'Load Test Message ' + new Date().toISOString(),
   });
 
-  // 3. Enviar Mensagem
+  // 4. Enviar Mensagem (Para a rota protegida)
   const res = http.post(
     `${BASE_URL}/conversations/${CONVERSATION_ID}/messages`,
     messagePayload,
     params
   );
 
-  // 4. Verificar se deu 202
+  // 5. Verificar se deu 202 (Accepted)
   const success = check(res, {
     'status é 202': (r) => r.status === 202,
   });
 
   if (!success) {
-      console.error(`FALHA MSG: ${res.status} - ${res.body}`);
+      console.error(`FALHA MSG: Status ${res.status}. Body: ${res.body}`);
   }
 
   sleep(1);

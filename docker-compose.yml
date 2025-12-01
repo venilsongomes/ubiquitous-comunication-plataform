@@ -5,7 +5,7 @@ services:
   # --- Serviço Java ---
   app:
     build: ./platform-core
-    container_name: platform_core_app
+    container_name: app
     ports:
       - "8080:8080"
     depends_on:
