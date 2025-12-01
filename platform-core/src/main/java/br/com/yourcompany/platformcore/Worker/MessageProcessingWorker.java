@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
+
 @Service
 public class MessageProcessingWorker {
 
@@ -44,9 +47,19 @@ public class MessageProcessingWorker {
     @GrpcClient("presenceService") 
     private PresenceServiceGrpc.PresenceServiceBlockingStub presenceClient;
 
+    @Autowired
+    private Counter messagesProcessedCounter;
+
+    @Autowired
+    private Counter errorsCounter;
+
+    @Autowired
+    private Timer latencyTimer;
+
     @KafkaListener(topics = TOPIC_INBOUND, groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     public void handleMessage(InternalMessageEvent event) {
+        long start = System.currentTimeMillis();
         try {
             User sender = userRepository.findById(event.getSenderId()).orElseThrow();
             Conversation conversation = conversationRepository.findById(event.getConversationId()).orElseThrow();
@@ -63,8 +76,12 @@ public class MessageProcessingWorker {
 
                 routeMessageToRecipient(event, recipient, savedMessage);
             }
+            messagesProcessedCounter.increment();
         } catch (Exception e) {
+            errorsCounter.increment();
             logger.error("Erro no processamento: ", e);
+        } finally {
+            latencyTimer.record(System.currentTimeMillis() - start, java.util.concurrent.TimeUnit.MILLISECONDS);
         }
     }
 
