@@ -37,6 +37,11 @@ public class SecurityConfig {
                 
                 // Libera endpoints de monitoramento do Actuator
                 .requestMatchers("/actuator/**").permitAll()
+
+                .requestMatchers("/v3/api-docs/**").permitAll() 
+                
+                // 2. Libera o acesso à interface gráfica (UI)
+                .requestMatchers("/swagger-ui/**").permitAll()
                 
                 // Protege todo o resto
                 .anyRequest().authenticated() 
