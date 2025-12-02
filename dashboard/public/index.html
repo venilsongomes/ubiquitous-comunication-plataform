@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Plataforma de Comunicação Ubíqua</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .status-item strong {
+            color: #333;
+        }
+
+        .status-running {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-stopped {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            background: #f9f9f9;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Dashboard - Plataforma Ubíqua</h1>
+            <p>Gerencie sua plataforma de comunicação distribuída</p>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Card: Status dos Containers -->
+            <div class="card">
+                <h2>📊 Status dos Containers</h2>
+                <div id="alert-status"></div>
+                <div class="button-group">
+                    <button class="btn-info" onclick="getDockerStatus()">🔄 Atualizar Status</button>
+                    <button class="btn-success" onclick="startContainers()">▶️ Iniciar</button>
+                    <button class="btn-danger" onclick="stopContainers()">⏹️ Parar</button>
+                </div>
+                <div id="status-list" class="status-grid"></div>
+            </div>
+
+            <!-- Card: Autenticação -->
+            <div class="card">
+                <h2>🔐 Autenticação JWT</h2>
+                <div id="alert-auth"></div>
+                <input type="text" id="username" placeholder="Username" value="tester">
+                <input type="password" id="password" placeholder="Password" value="123">
+                <div class="button-group">
+                    <button class="btn-primary" onclick="registerUser()">📝 Registrar</button>
+                    <button class="btn-primary" onclick="loginUser()">🔑 Login</button>
+                </div>
+                <textarea id="token-display" readonly placeholder="Token JWT será exibido aqui..."></textarea>
+            </div>
+
+            <!-- Card: Upload de Arquivos -->
+            <div class="card">
+                <h2>📁 Upload S3/MinIO</h2>
+                <div id="alert-upload"></div>
+                <input type="text" id="filename" placeholder="Nome do arquivo" value="teste-final.txt">
+                <input type="text" id="mimetype" placeholder="MIME Type" value="text/plain">
+                <textarea id="file-content" placeholder="Conteúdo do arquivo">Este e um teste de upload para o MinIO!</textarea>
+                <div class="button-group">
+                    <button class="btn-info" onclick="initiateUpload()">1️⃣ Iniciar Upload</button>
+                    <button class="btn-info" onclick="uploadFile()">2️⃣ Upload Arquivo</button>
+                    <button class="btn-success" onclick="completeUpload()">3️⃣ Completar Upload</button>
+                </div>
+                <textarea id="upload-result" readonly placeholder="Resultado do upload..."></textarea>
+            </div>
+
+            <!-- Card: Enviar Mensagens -->
+            <div class="card">
+                <h2>💬 Enviar Mensagem</h2>
+                <div id="alert-messages"></div>
+                <input type="text" id="message-conversation-id" placeholder="ID da Conversa (UUID)">
+                <textarea id="message-content" placeholder="Conteúdo da mensagem..." style="min-height: 80px;">Olá! Esta é uma mensagem de teste via dashboard.</textarea>
+                <select id="message-type" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-bottom: 10px;">
+                    <option value="text">📝 Texto</option>
+                    <option value="image">🖼️ Imagem</option>
+                    <option value="video">🎥 Vídeo</option>
+                    <option value="file">📄 Arquivo</option>
+                </select>
+                <div class="button-group">
+                    <button class="btn-success" onclick="sendMessage()">📤 Enviar Mensagem</button>
+                    <button class="btn-info" onclick="generateConversationId()">🔄 Gerar ID Conversa</button>
+                </div>
+                <textarea id="message-result" readonly placeholder="Resposta do servidor..."></textarea>
+            </div>
+
+            <!-- Card: Logs -->
+            <div class="card full-width">
+                <h2>📜 Logs da Aplicação</h2>
+                <div class="button-group">
+                    <button class="btn-info" onclick="getLogs(50)">📋 Últimos 50 logs</button>
+                    <button class="btn-info" onclick="getLogs(100)">📋 Últimos 100 logs</button>
+                    <button class="btn-info" onclick="getLogs(200)">📋 Últimos 200 logs</button>
+                </div>
+                <div id="logs-display" class="logs-container">Clique em um botão para carregar logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let token = '';
+        let uploadData = {};
+
+        // Função auxiliar para fazer requisições
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (body) options.body = JSON.stringify(body);
+
+                const response = await fetch(`http://localhost:3333${endpoint}`, options);
+                const data = await response.json();
+                return data;
+            } catch (err) {
+                return { success: false, error: err.message };
+            }
+        }
+
+        // Função para exibir alertas
+        function showAlert(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            el.className = `alert alert-${type}`;
+            el.textContent = message;
+            setTimeout(() => { el.className = ''; }, 5000);
+        }
+
+        // ===== DOCKER FUNCTIONS =====
+        async function getDockerStatus() {
+            const result = await apiCall('/api/docker/status');
+            if (result.success) {
+                const list = document.getElementById('status-list');
+                list.innerHTML = result.containers.map(c => `
+                    <div class="status-item">
+                        <strong>${c.name}</strong>
+                        <span class="${c.status.includes('Up') ? 'status-running' : 'status-stopped'}">
+                            ${c.status}
+                        </span>
+                    </div>
+                `).join('');
+                showAlert('alert-status', '✅ Status atualizado', 'success');
+            } else {
+                showAlert('alert-status', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function startContainers() {
+            showAlert('alert-status', '⏳ Iniciando containers...', 'info');
+            const result = await apiCall('/api/docker/start', 'POST');
+            if (result.success) {
+                showAlert('alert-status', '✅ Containers iniciados! (aguarde ~60s)', 'success');
+                setTimeout(getDockerStatus, 60000);
+            } else {
+                showAlert('alert-status', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function stopContainers() {
+            showAlert('alert-status', '⏳ Parando containers...', 'info');
+            const result = await apiCall('/api/docker/stop', 'POST');
+            if (result.success) {
+                showAlert('alert-status', '✅ Containers parados', 'success');
+                setTimeout(getDockerStatus, 2000);
+            } else {
+                showAlert('alert-status', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        // ===== AUTH FUNCTIONS =====
+        async function registerUser() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const result = await apiCall('/api/platform/register', 'POST', { username, password });
+            if (result.success) {
+                showAlert('alert-auth', `✅ Usuário registrado: ${result.data.username}`, 'success');
+            } else {
+                showAlert('alert-auth', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function loginUser() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const result = await apiCall('/api/platform/login', 'POST', { username, password });
+            if (result.success) {
+                token = result.data.token;
+                document.getElementById('token-display').value = token;
+                showAlert('alert-auth', '✅ Login realizado!', 'success');
+            } else {
+                showAlert('alert-auth', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        // ===== UPLOAD FUNCTIONS =====
+        async function initiateUpload() {
+            if (!token) {
+                showAlert('alert-upload', '❌ Faça login primeiro!', 'error');
+                return;
+            }
+            const filename = document.getElementById('filename').value;
+            const mimeType = document.getElementById('mimetype').value;
+            const fileSize = document.getElementById('file-content').value.length;
+
+            const result = await apiCall('/api/platform/upload/initiate', 'POST', {
+                filename, mimeType, fileSize, token
+            });
+            if (result.success) {
+                uploadData = result.data;
+                document.getElementById('upload-result').value = JSON.stringify(uploadData, null, 2);
+                showAlert('alert-upload', '✅ Upload iniciado!', 'success');
+            } else {
+                showAlert('alert-upload', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function uploadFile() {
+            if (!uploadData.presignedUrls) {
+                showAlert('alert-upload', '❌ Inicie o upload primeiro!', 'error');
+                return;
+            }
+            const content = document.getElementById('file-content').value;
+            const result = await apiCall('/api/platform/upload/file', 'POST', {
+                presignedUrl: uploadData.presignedUrls[0],
+                content
+            });
+            if (result.success) {
+                uploadData.eTag = result.eTag;
+                document.getElementById('upload-result').value = `ETag: ${result.eTag}\n\n${result.output}`;
+                showAlert('alert-upload', '✅ Arquivo enviado!', 'success');
+            } else {
+                showAlert('alert-upload', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function completeUpload() {
+            if (!uploadData.attachmentId || !uploadData.eTag) {
+                showAlert('alert-upload', '❌ Realize os passos anteriores primeiro!', 'error');
+                return;
+            }
+            const result = await apiCall('/api/platform/upload/complete', 'POST', {
+                attachmentId: uploadData.attachmentId,
+                eTag: uploadData.eTag,
+                token
+            });
+            if (result.success) {
+                document.getElementById('upload-result').value = '✅ Upload completado com sucesso!\n\n' + result.output;
+                showAlert('alert-upload', '✅ Upload finalizado!', 'success');
+                uploadData = {};
+            } else {
+                showAlert('alert-upload', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        // ===== MESSAGE FUNCTIONS =====
+        function generateConversationId() {
+            const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                let r = Math.random() * 16 | 0;
+                let v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+            document.getElementById('message-conversation-id').value = id;
+            showAlert('alert-messages', `✅ ID da conversa gerado: ${id}`, 'success');
+        }
+
+        async function sendMessage() {
+            if (!token) {
+                showAlert('alert-messages', '❌ Faça login primeiro!', 'error');
+                return;
+            }
+
+            const conversationId = document.getElementById('message-conversation-id').value;
+            const messageContent = document.getElementById('message-content').value;
+            const messageType = document.getElementById('message-type').value;
+
+            if (!conversationId || !messageContent) {
+                showAlert('alert-messages', '❌ Preencha conversa ID e mensagem!', 'error');
+                return;
+            }
+
+            const result = await apiCall('/api/platform/messages/send', 'POST', {
+                conversationId,
+                payload: {
+                    type: messageType,
+                    text: messageContent
+                },
+                token
+            });
+
+            if (result.success) {
+                document.getElementById('message-result').value = `✅ Mensagem enviada com sucesso!\n\nResposta:\n${result.output}`;
+                showAlert('alert-messages', '✅ Mensagem enviada!', 'success');
+                document.getElementById('message-content').value = '';
+            } else {
+                document.getElementById('message-result').value = `❌ Erro: ${result.error}`;
+                showAlert('alert-messages', '❌ Erro ao enviar: ' + result.error, 'error');
+            }
+        }
+
+        // ===== LOGS FUNCTION =====
+        async function getLogs(lines = 50) {
+            const logsDiv = document.getElementById('logs-display');
+            logsDiv.innerHTML = '<span class="spinner"></span> Carregando logs...';
+            const result = await apiCall(`/api/docker/logs?lines=${lines}`);
+            if (result.success) {
+                logsDiv.textContent = result.logs;
+                logsDiv.scrollTop = logsDiv.scrollHeight;
+            } else {
+                logsDiv.textContent = `Erro: ${result.error}`;
+            }
+        }
+
+        // Inicializar
+        window.addEventListener('load', getDockerStatus);
+    </script>
+</body>
+</html>
