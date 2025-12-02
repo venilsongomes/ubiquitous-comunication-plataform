@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Plataforma de Comunicação Ubíqua</title>
+    <title>Dashboard Completo - Plataforma de Comunicação Ubíqua</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -32,6 +32,42 @@
         header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .dashboard-grid {
@@ -56,6 +92,13 @@
             padding-bottom: 10px;
         }
 
+        .card h3 {
+            color: #555;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
         .status-grid {
             display: grid;
             gap: 10px;
@@ -64,6 +107,7 @@
         .status-item {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 10px;
             background: #f5f5f5;
             border-radius: 5px;
@@ -72,16 +116,29 @@
 
         .status-item strong {
             color: #333;
+            flex: 1;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.85em;
         }
 
         .status-running {
-            color: #28a745;
-            font-weight: bold;
+            background: #d4edda;
+            color: #155724;
         }
 
         .status-stopped {
-            color: #dc3545;
-            font-weight: bold;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-online {
+            background: #d1ecf1;
+            color: #0c5460;
         }
 
         .button-group {
@@ -92,11 +149,11 @@
         }
 
         button {
-            padding: 10px 20px;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.95em;
+            font-size: 0.9em;
             font-weight: bold;
             transition: all 0.3s ease;
         }
@@ -138,18 +195,28 @@
             background: #138496;
         }
 
-        input, textarea {
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        input, textarea, select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             margin-bottom: 10px;
             font-size: 0.95em;
+            font-family: inherit;
         }
 
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
             font-family: 'Courier New', monospace;
             background: #f9f9f9;
         }
@@ -159,11 +226,37 @@
             color: #00ff00;
             padding: 15px;
             border-radius: 5px;
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
             font-size: 0.85em;
             line-height: 1.5;
+            word-break: break-all;
+        }
+
+        .message-thread {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            background: white;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            border-left: 3px solid #667eea;
+        }
+
+        .message.sent {
+            border-left-color: #28a745;
+        }
+
+        .message.received {
+            border-left-color: #17a2b8;
         }
 
         .alert {
@@ -194,6 +287,13 @@
             display: block;
         }
 
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            display: block;
+        }
+
         .spinner {
             display: inline-block;
             width: 20px;
@@ -213,6 +313,32 @@
             grid-column: 1 / -1;
         }
 
+        .two-column {
+            grid-column: span 2;
+        }
+
+        .metric {
+            display: inline-block;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 5px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
         @media (max-width: 768px) {
             header h1 {
                 font-size: 1.8em;
@@ -221,111 +347,344 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .two-column {
+                grid-column: span 1;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🚀 Dashboard - Plataforma Ubíqua</h1>
-            <p>Gerencie sua plataforma de comunicação distribuída</p>
+            <h1>🚀 Dashboard Completo - Plataforma Ubíqua</h1>
+            <p>Gerencie todas as funcionalidades da sua plataforma distribuída</p>
         </header>
 
-        <div class="dashboard-grid">
-            <!-- Card: Status dos Containers -->
-            <div class="card">
-                <h2>📊 Status dos Containers</h2>
-                <div id="alert-status"></div>
-                <div class="button-group">
-                    <button class="btn-info" onclick="getDockerStatus()">🔄 Atualizar Status</button>
-                    <button class="btn-success" onclick="startContainers()">▶️ Iniciar</button>
-                    <button class="btn-danger" onclick="stopContainers()">⏹️ Parar</button>
-                </div>
-                <div id="status-list" class="status-grid"></div>
-            </div>
+        <!-- Abas de Navegação -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('infrastructure')">📊 Infraestrutura</button>
+            <button class="tab-btn" onclick="switchTab('auth')">🔐 Autenticação</button>
+            <button class="tab-btn" onclick="switchTab('messaging')">💬 Mensageria</button>
+            <button class="tab-btn" onclick="switchTab('presence')">📍 Presença</button>
+            <button class="tab-btn" onclick="switchTab('storage')">📁 Armazenamento</button>
+            <button class="tab-btn" onclick="switchTab('telegram')">📱 Telegram</button>
+            <button class="tab-btn" onclick="switchTab('monitoring')">📊 Monitoramento</button>
+            <button class="tab-btn" onclick="switchTab('advanced')">⚙️ Avançado</button>
+        </div>
 
-            <!-- Card: Autenticação -->
-            <div class="card">
-                <h2>🔐 Autenticação JWT</h2>
-                <div id="alert-auth"></div>
-                <input type="text" id="username" placeholder="Username" value="tester">
-                <input type="password" id="password" placeholder="Password" value="123">
-                <div class="button-group">
-                    <button class="btn-primary" onclick="registerUser()">📝 Registrar</button>
-                    <button class="btn-primary" onclick="loginUser()">🔑 Login</button>
+        <!-- TAB 1: INFRAESTRUTURA -->
+        <div id="infrastructure" class="tab-content active">
+            <div class="dashboard-grid">
+                <!-- Docker Status -->
+                <div class="card full-width">
+                    <h2>📊 Status dos Containers Docker</h2>
+                    <div id="alert-docker"></div>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="getDockerStatus()">🔄 Atualizar</button>
+                        <button class="btn-success" onclick="startContainers()">▶️ Iniciar Todos</button>
+                        <button class="btn-danger" onclick="stopContainers()">⏹️ Parar Todos</button>
+                    </div>
+                    <div id="docker-status" class="status-grid"></div>
                 </div>
-                <textarea id="token-display" readonly placeholder="Token JWT será exibido aqui..."></textarea>
-            </div>
 
-            <!-- Card: Upload de Arquivos -->
-            <div class="card">
-                <h2>📁 Upload S3/MinIO</h2>
-                <div id="alert-upload"></div>
-                <input type="text" id="filename" placeholder="Nome do arquivo" value="teste-final.txt">
-                <input type="text" id="mimetype" placeholder="MIME Type" value="text/plain">
-                <textarea id="file-content" placeholder="Conteúdo do arquivo">Este e um teste de upload para o MinIO!</textarea>
-                <div class="button-group">
-                    <button class="btn-info" onclick="initiateUpload()">1️⃣ Iniciar Upload</button>
-                    <button class="btn-info" onclick="uploadFile()">2️⃣ Upload Arquivo</button>
-                    <button class="btn-success" onclick="completeUpload()">3️⃣ Completar Upload</button>
+                <!-- Kafka Status -->
+                <div class="card">
+                    <h2>🔗 Apache Kafka</h2>
+                    <div id="alert-kafka"></div>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="checkKafka()">✅ Verificar Status</button>
+                        <button class="btn-primary" onclick="listKafkaTopics()">📋 Listar Tópicos</button>
+                    </div>
+                    <textarea id="kafka-status" readonly placeholder="Status do Kafka..."></textarea>
                 </div>
-                <textarea id="upload-result" readonly placeholder="Resultado do upload..."></textarea>
-            </div>
 
-            <!-- Card: Enviar Mensagens -->
-            <div class="card">
-                <h2>💬 Enviar Mensagem</h2>
-                <div id="alert-messages"></div>
-                <input type="text" id="message-conversation-id" placeholder="ID da Conversa (UUID)">
-                <textarea id="message-content" placeholder="Conteúdo da mensagem..." style="min-height: 80px;">Olá! Esta é uma mensagem de teste via dashboard.</textarea>
-                <select id="message-type" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-bottom: 10px;">
-                    <option value="text">📝 Texto</option>
-                    <option value="image">🖼️ Imagem</option>
-                    <option value="video">🎥 Vídeo</option>
-                    <option value="file">📄 Arquivo</option>
-                </select>
-                <div class="button-group">
-                    <button class="btn-success" onclick="sendMessage()">📤 Enviar Mensagem</button>
-                    <button class="btn-info" onclick="generateConversationId()">🔄 Gerar ID Conversa</button>
+                <!-- Redis Status -->
+                <div class="card">
+                    <h2>⚡ Redis Cache</h2>
+                    <div id="alert-redis"></div>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="checkRedis()">✅ Verificar Status</button>
+                        <button class="btn-primary" onclick="getRedisInfo()">📊 Informações</button>
+                    </div>
+                    <textarea id="redis-status" readonly placeholder="Status do Redis..."></textarea>
                 </div>
-                <textarea id="message-result" readonly placeholder="Resposta do servidor..."></textarea>
-            </div>
 
-            <!-- Card: Logs -->
-            <div class="card full-width">
-                <h2>📜 Logs da Aplicação</h2>
-                <div class="button-group">
-                    <button class="btn-info" onclick="getLogs(50)">📋 Últimos 50 logs</button>
-                    <button class="btn-info" onclick="getLogs(100)">📋 Últimos 100 logs</button>
-                    <button class="btn-info" onclick="getLogs(200)">📋 Últimos 200 logs</button>
+                <!-- Database Status -->
+                <div class="card">
+                    <h2>🗄️ PostgreSQL</h2>
+                    <div id="alert-database"></div>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="checkDatabase()">✅ Verificar Status</button>
+                        <button class="btn-primary" onclick="getDatabaseInfo()">📊 Informações</button>
+                    </div>
+                    <textarea id="database-status" readonly placeholder="Status do PostgreSQL..."></textarea>
                 </div>
-                <div id="logs-display" class="logs-container">Clique em um botão para carregar logs...</div>
+            </div>
+        </div>
+
+        <!-- TAB 2: AUTENTICAÇÃO -->
+        <div id="auth" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card full-width">
+                    <h2>🔐 Sistema de Autenticação JWT</h2>
+                    <div id="alert-auth"></div>
+
+                    <h3>👤 Criar Novo Usuário</h3>
+                    <input type="text" id="reg-username" placeholder="Nome de usuário" value="user">
+                    <input type="email" id="reg-email" placeholder="Email" value="user@example.com">
+                    <input type="password" id="reg-password" placeholder="Senha" value="Senha123!">
+                    <input type="password" id="reg-password-confirm" placeholder="Confirmar Senha" value="Senha123!">
+                    <button class="btn-success" onclick="registerUser()">📝 Registrar</button>
+
+                    <h3 style="margin-top: 20px;">🔑 Fazer Login</h3>
+                    <input type="text" id="login-username" placeholder="Nome de usuário" value="user">
+                    <input type="password" id="login-password" placeholder="Senha" value="Senha123!">
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="loginUser()">🔓 Login</button>
+                        <button class="btn-secondary" onclick="logoutUser()">🚪 Logout</button>
+                    </div>
+
+                    <h3>📋 Token JWT</h3>
+                    <textarea id="token-display" readonly placeholder="Token JWT será exibido aqui..."></textarea>
+                    <button class="btn-info" onclick="copyToken()">📋 Copiar Token</button>
+
+                    <h3 style="margin-top: 20px;">🔍 Validar Token</h3>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="validateToken()">✅ Validar Token Atual</button>
+                    </div>
+                    <textarea id="token-validation" readonly placeholder="Resultado da validação..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: MENSAGERIA -->
+        <div id="messaging" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card full-width">
+                    <h2>💬 Sistema de Mensageria em Tempo Real</h2>
+                    <div id="alert-messaging"></div>
+
+                    <h3>📤 Enviar Mensagem</h3>
+                    <input type="text" id="msg-conversation-id" placeholder="ID da Conversa (UUID)">
+                    <select id="msg-type" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-bottom: 10px;">
+                        <option value="text">📝 Texto</option>
+                        <option value="image">🖼️ Imagem</option>
+                        <option value="video">🎥 Vídeo</option>
+                        <option value="file">📄 Arquivo</option>
+                        <option value="location">📍 Localização</option>
+                    </select>
+                    <textarea id="msg-content" placeholder="Conteúdo da mensagem...">Olá! Esta é uma mensagem de teste.</textarea>
+                    <div class="button-group">
+                        <button class="btn-success" onclick="sendMessage()">📤 Enviar</button>
+                        <button class="btn-info" onclick="generateConversationId()">🔄 Gerar ID</button>
+                        <button class="btn-info" onclick="connectWebSocket()">🔌 Conectar WebSocket</button>
+                        <button class="btn-danger" onclick="disconnectWebSocket()">❌ Desconectar</button>
+                    </div>
+
+                    <h3>🔍 Histórico de Mensagens</h3>
+                    <div class="message-thread" id="message-thread"></div>
+
+                    <h3>📡 Status da Conexão</h3>
+                    <div id="websocket-status" class="status-item" style="display: flex; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                        <strong>WebSocket:</strong>
+                        <span class="status-badge status-stopped" id="ws-status">Desconectado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: PRESENÇA -->
+        <div id="presence" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>📍 Gerenciar Presença (ONLINE/OFFLINE)</h2>
+                    <div id="alert-presence"></div>
+
+                    <h3>👤 Sua Presença</h3>
+                    <div class="status-item">
+                        <strong>Status Atual:</strong>
+                        <span class="status-badge status-online" id="my-presence">Offline</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-success" onclick="goOnline()">🟢 Online</button>
+                        <button class="btn-danger" onclick="goOffline()">🔴 Offline</button>
+                    </div>
+
+                    <h3>🔍 Verificar Presença de Outro Usuário</h3>
+                    <input type="text" id="presence-user-id" placeholder="ID do Usuário (UUID)">
+                    <button class="btn-info" onclick="checkUserPresence()">🔍 Verificar</button>
+                    <textarea id="presence-result" readonly placeholder="Resultado..."></textarea>
+                </div>
+
+                <div class="card">
+                    <h2>👥 Usuários Online</h2>
+                    <div id="alert-users"></div>
+                    <button class="btn-info" onclick="getOnlineUsers()">🔄 Atualizar Lista</button>
+                    <div id="online-users" class="status-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: ARMAZENAMENTO -->
+        <div id="storage" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card full-width">
+                    <h2>📁 Upload de Arquivos (S3/MinIO)</h2>
+                    <div id="alert-storage"></div>
+
+                    <h3>📤 3 Passos para Upload</h3>
+                    <input type="text" id="upload-filename" placeholder="Nome do arquivo" value="documento.pdf">
+                    <input type="text" id="upload-mimetype" placeholder="MIME Type" value="application/pdf">
+                    <textarea id="upload-content" placeholder="Conteúdo (ou deixe em branco para arquivo externo)" style="min-height: 60px;">Este é um teste de upload.</textarea>
+
+                    <div class="button-group">
+                        <button class="btn-info" onclick="initiateUpload()">1️⃣ Iniciar Upload</button>
+                        <button class="btn-info" onclick="uploadFile()">2️⃣ Enviar Arquivo</button>
+                        <button class="btn-success" onclick="completeUpload()">3️⃣ Completar</button>
+                    </div>
+
+                    <h3>📊 Resultado do Upload</h3>
+                    <textarea id="upload-result" readonly placeholder="Resultado do upload..."></textarea>
+
+                    <h3 style="margin-top: 20px;">🔗 Acessar MinIO</h3>
+                    <div class="button-group">
+                        <button class="btn-secondary" onclick="window.open('http://localhost:9001', '_blank')">🌐 MinIO Console</button>
+                        <button class="btn-info" onclick="listBuckets()">📋 Listar Buckets</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: TELEGRAM -->
+        <div id="telegram" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card full-width">
+                    <h2>📱 Integração Telegram</h2>
+                    <div id="alert-telegram"></div>
+
+                    <h3>⚙️ Configuração</h3>
+                    <input type="text" id="telegram-token" placeholder="Token do Bot Telegram" value="YOUR_BOT_TOKEN_HERE">
+                    <input type="text" id="telegram-chat-id" placeholder="ID do Chat/Usuário" value="YOUR_CHAT_ID_HERE">
+                    <button class="btn-primary" onclick="saveTelegramConfig()">💾 Salvar Configuração</button>
+
+                    <h3 style="margin-top: 20px;">📤 Enviar Mensagem</h3>
+                    <textarea id="telegram-message" placeholder="Mensagem para Telegram...">Olá do Dashboard!</textarea>
+                    <div class="button-group">
+                        <button class="btn-success" onclick="sendTelegramMessage()">📤 Enviar</button>
+                        <button class="btn-info" onclick="testTelegramConnection()">🔌 Testar Conexão</button>
+                    </div>
+
+                    <h3>📨 Receber Mensagens</h3>
+                    <button class="btn-info" onclick="startTelegramListener()">👂 Iniciar Listener</button>
+                    <button class="btn-danger" onclick="stopTelegramListener()">⏹️ Parar Listener</button>
+                    <div id="telegram-messages" class="message-thread"></div>
+
+                    <h3 style="margin-top: 20px;">ℹ️ Status</h3>
+                    <textarea id="telegram-status" readonly placeholder="Status da conexão..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 7: MONITORAMENTO -->
+        <div id="monitoring" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>📊 Prometheus</h2>
+                    <p>Métricas de Performance e Health Check</p>
+                    <button class="btn-secondary" onclick="window.open('http://localhost:9090', '_blank')">🌐 Prometheus UI</button>
+                    <button class="btn-info" onclick="getPrometheusMetrics()">📊 Carregar Métricas</button>
+                    <textarea id="prometheus-metrics" readonly placeholder="Métricas..."></textarea>
+                </div>
+
+                <div class="card">
+                    <h2>📈 Grafana</h2>
+                    <p>Dashboards Visuais e Alertas</p>
+                    <button class="btn-secondary" onclick="window.open('http://localhost:3000', '_blank')">🌐 Grafana UI</button>
+                    <button class="btn-info" onclick="getGrafanaHealth()">❤️ Verificar Saúde</button>
+                    <textarea id="grafana-status" readonly placeholder="Status do Grafana..."></textarea>
+                </div>
+
+                <div class="card full-width">
+                    <h2>📉 Métricas da Aplicação</h2>
+                    <button class="btn-info" onclick="getApplicationMetrics()">🔄 Atualizar Métricas</button>
+                    <div id="app-metrics"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 8: AVANÇADO -->
+        <div id="advanced" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>📜 Logs em Tempo Real</h2>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="getLogs(50)">50 linhas</button>
+                        <button class="btn-info" onclick="getLogs(100)">100 linhas</button>
+                        <button class="btn-info" onclick="getLogs(200)">200 linhas</button>
+                    </div>
+                    <div id="logs-display" class="logs-container">Clique para carregar logs...</div>
+                </div>
+
+                <div class="card">
+                    <h2>⚙️ Configurações Avançadas</h2>
+                    <h3>🔧 Operações do Sistema</h3>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="restartApp()">🔄 Reiniciar App</button>
+                        <button class="btn-primary" onclick="rebuildContainers()">🔨 Rebuild Containers</button>
+                        <button class="btn-danger" onclick="pruneDocker()">🗑️ Limpar Docker</button>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">📋 Informações do Sistema</h3>
+                    <button class="btn-info" onclick="getSystemInfo()">ℹ️ Info do Sistema</button>
+                    <textarea id="system-info" readonly placeholder="Informações..."></textarea>
+                </div>
+
+                <div class="card full-width">
+                    <h2>🧪 Testes de Performance</h2>
+                    <div class="button-group">
+                        <button class="btn-info" onclick="testLatency()">⏱️ Teste de Latência</button>
+                        <button class="btn-info" onclick="testThroughput()">📊 Teste de Throughput</button>
+                        <button class="btn-info" onclick="testConcurrency()">🔀 Teste Concorrência</button>
+                    </div>
+                    <textarea id="test-results" readonly placeholder="Resultados dos testes..."></textarea>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // ===== ESTADO GLOBAL =====
         let token = '';
         let uploadData = {};
+        let ws = null;
+        let currentPresence = 'offline';
+        let messages = [];
 
-        // Função auxiliar para fazer requisições
+        // ===== FUNÇÕES AUXILIARES =====
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
         async function apiCall(endpoint, method = 'GET', body = null) {
             try {
-                const options = {
-                    method,
-                    headers: { 'Content-Type': 'application/json' }
-                };
+                const options = { method, headers: { 'Content-Type': 'application/json' } };
                 if (body) options.body = JSON.stringify(body);
-
                 const response = await fetch(`http://localhost:3333${endpoint}`, options);
-                const data = await response.json();
-                return data;
+                return await response.json();
             } catch (err) {
                 return { success: false, error: err.message };
             }
         }
 
-        // Função para exibir alertas
         function showAlert(elementId, message, type = 'info') {
             const el = document.getElementById(elementId);
             el.className = `alert alert-${type}`;
@@ -333,52 +692,125 @@
             setTimeout(() => { el.className = ''; }, 5000);
         }
 
-        // ===== DOCKER FUNCTIONS =====
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                let r = Math.random() * 16 | 0;
+                let v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // ===== INFRASTRUCTURE FUNCTIONS =====
         async function getDockerStatus() {
             const result = await apiCall('/api/docker/status');
             if (result.success) {
-                const list = document.getElementById('status-list');
-                list.innerHTML = result.containers.map(c => `
+                const statusDiv = document.getElementById('docker-status');
+                statusDiv.innerHTML = result.containers.map(c => `
                     <div class="status-item">
                         <strong>${c.name}</strong>
-                        <span class="${c.status.includes('Up') ? 'status-running' : 'status-stopped'}">
+                        <span class="status-badge ${c.status.includes('Up') ? 'status-running' : 'status-stopped'}">
                             ${c.status}
                         </span>
                     </div>
                 `).join('');
-                showAlert('alert-status', '✅ Status atualizado', 'success');
+                showAlert('alert-docker', '✅ Status atualizado', 'success');
             } else {
-                showAlert('alert-status', '❌ Erro: ' + result.error, 'error');
+                showAlert('alert-docker', '❌ Erro: ' + result.error, 'error');
             }
         }
 
         async function startContainers() {
-            showAlert('alert-status', '⏳ Iniciando containers...', 'info');
+            showAlert('alert-docker', '⏳ Iniciando containers...', 'info');
             const result = await apiCall('/api/docker/start', 'POST');
             if (result.success) {
-                showAlert('alert-status', '✅ Containers iniciados! (aguarde ~60s)', 'success');
+                showAlert('alert-docker', '✅ Containers iniciados! (aguarde ~60s)', 'success');
                 setTimeout(getDockerStatus, 60000);
             } else {
-                showAlert('alert-status', '❌ Erro: ' + result.error, 'error');
+                showAlert('alert-docker', '❌ Erro: ' + result.error, 'error');
             }
         }
 
         async function stopContainers() {
-            showAlert('alert-status', '⏳ Parando containers...', 'info');
+            showAlert('alert-docker', '⏳ Parando containers...', 'info');
             const result = await apiCall('/api/docker/stop', 'POST');
             if (result.success) {
-                showAlert('alert-status', '✅ Containers parados', 'success');
+                showAlert('alert-docker', '✅ Containers parados', 'success');
                 setTimeout(getDockerStatus, 2000);
             } else {
-                showAlert('alert-status', '❌ Erro: ' + result.error, 'error');
+                showAlert('alert-docker', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function checkKafka() {
+            showAlert('alert-kafka', '⏳ Verificando Kafka...', 'info');
+            const result = await apiCall('/api/health/kafka');
+            if (result.success) {
+                document.getElementById('kafka-status').value = JSON.stringify(result.data, null, 2);
+                showAlert('alert-kafka', '✅ Kafka está saudável', 'success');
+            } else {
+                document.getElementById('kafka-status').value = 'Erro: ' + result.error;
+                showAlert('alert-kafka', '❌ Kafka com problemas', 'error');
+            }
+        }
+
+        async function listKafkaTopics() {
+            const result = await apiCall('/api/kafka/topics');
+            if (result.success) {
+                document.getElementById('kafka-status').value = JSON.stringify(result.topics, null, 2);
+            }
+        }
+
+        async function checkRedis() {
+            showAlert('alert-redis', '⏳ Verificando Redis...', 'info');
+            const result = await apiCall('/api/health/redis');
+            if (result.success) {
+                document.getElementById('redis-status').value = 'Status: Conectado\n' + JSON.stringify(result.data, null, 2);
+                showAlert('alert-redis', '✅ Redis está saudável', 'success');
+            } else {
+                document.getElementById('redis-status').value = 'Erro: ' + result.error;
+                showAlert('alert-redis', '❌ Redis com problemas', 'error');
+            }
+        }
+
+        async function getRedisInfo() {
+            const result = await apiCall('/api/redis/info');
+            if (result.success) {
+                document.getElementById('redis-status').value = result.info;
+            }
+        }
+
+        async function checkDatabase() {
+            showAlert('alert-database', '⏳ Verificando PostgreSQL...', 'info');
+            const result = await apiCall('/api/health/database');
+            if (result.success) {
+                document.getElementById('database-status').value = 'Status: Conectado\n' + JSON.stringify(result.data, null, 2);
+                showAlert('alert-database', '✅ PostgreSQL está saudável', 'success');
+            } else {
+                document.getElementById('database-status').value = 'Erro: ' + result.error;
+                showAlert('alert-database', '❌ PostgreSQL com problemas', 'error');
+            }
+        }
+
+        async function getDatabaseInfo() {
+            const result = await apiCall('/api/database/info');
+            if (result.success) {
+                document.getElementById('database-status').value = result.info;
             }
         }
 
         // ===== AUTH FUNCTIONS =====
         async function registerUser() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const result = await apiCall('/api/platform/register', 'POST', { username, password });
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const passwordConfirm = document.getElementById('reg-password-confirm').value;
+
+            if (password !== passwordConfirm) {
+                showAlert('alert-auth', '❌ Senhas não conferem', 'error');
+                return;
+            }
+
+            const result = await apiCall('/api/platform/register', 'POST', { username, email, password });
             if (result.success) {
                 showAlert('alert-auth', `✅ Usuário registrado: ${result.data.username}`, 'success');
             } else {
@@ -387,8 +819,8 @@
         }
 
         async function loginUser() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
             const result = await apiCall('/api/platform/login', 'POST', { username, password });
             if (result.success) {
                 token = result.data.token;
@@ -399,112 +831,299 @@
             }
         }
 
-        // ===== UPLOAD FUNCTIONS =====
-        async function initiateUpload() {
+        function logoutUser() {
+            token = '';
+            document.getElementById('token-display').value = '';
+            showAlert('alert-auth', '✅ Logout realizado', 'success');
+        }
+
+        function copyToken() {
+            const token = document.getElementById('token-display').value;
+            if (token) {
+                navigator.clipboard.writeText(token);
+                showAlert('alert-auth', '📋 Token copiado!', 'success');
+            }
+        }
+
+        async function validateToken() {
             if (!token) {
-                showAlert('alert-upload', '❌ Faça login primeiro!', 'error');
+                showAlert('alert-auth', '❌ Nenhum token', 'error');
                 return;
             }
-            const filename = document.getElementById('filename').value;
-            const mimeType = document.getElementById('mimetype').value;
-            const fileSize = document.getElementById('file-content').value.length;
-
-            const result = await apiCall('/api/platform/upload/initiate', 'POST', {
-                filename, mimeType, fileSize, token
-            });
-            if (result.success) {
-                uploadData = result.data;
-                document.getElementById('upload-result').value = JSON.stringify(uploadData, null, 2);
-                showAlert('alert-upload', '✅ Upload iniciado!', 'success');
-            } else {
-                showAlert('alert-upload', '❌ Erro: ' + result.error, 'error');
-            }
+            const result = await apiCall('/api/platform/validate-token', 'POST', { token });
+            const resultText = result.success ? '✅ Token válido!' : '❌ Token inválido';
+            document.getElementById('token-validation').value = resultText + '\n\n' + JSON.stringify(result.data || result.error, null, 2);
         }
 
-        async function uploadFile() {
-            if (!uploadData.presignedUrls) {
-                showAlert('alert-upload', '❌ Inicie o upload primeiro!', 'error');
-                return;
-            }
-            const content = document.getElementById('file-content').value;
-            const result = await apiCall('/api/platform/upload/file', 'POST', {
-                presignedUrl: uploadData.presignedUrls[0],
-                content
-            });
-            if (result.success) {
-                uploadData.eTag = result.eTag;
-                document.getElementById('upload-result').value = `ETag: ${result.eTag}\n\n${result.output}`;
-                showAlert('alert-upload', '✅ Arquivo enviado!', 'success');
-            } else {
-                showAlert('alert-upload', '❌ Erro: ' + result.error, 'error');
-            }
-        }
-
-        async function completeUpload() {
-            if (!uploadData.attachmentId || !uploadData.eTag) {
-                showAlert('alert-upload', '❌ Realize os passos anteriores primeiro!', 'error');
-                return;
-            }
-            const result = await apiCall('/api/platform/upload/complete', 'POST', {
-                attachmentId: uploadData.attachmentId,
-                eTag: uploadData.eTag,
-                token
-            });
-            if (result.success) {
-                document.getElementById('upload-result').value = '✅ Upload completado com sucesso!\n\n' + result.output;
-                showAlert('alert-upload', '✅ Upload finalizado!', 'success');
-                uploadData = {};
-            } else {
-                showAlert('alert-upload', '❌ Erro: ' + result.error, 'error');
-            }
-        }
-
-        // ===== MESSAGE FUNCTIONS =====
+        // ===== MESSAGING FUNCTIONS =====
         function generateConversationId() {
-            const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                let r = Math.random() * 16 | 0;
-                let v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-            document.getElementById('message-conversation-id').value = id;
-            showAlert('alert-messages', `✅ ID da conversa gerado: ${id}`, 'success');
+            const id = generateUUID();
+            document.getElementById('msg-conversation-id').value = id;
+            showAlert('alert-messaging', `✅ ID gerado: ${id}`, 'success');
         }
 
         async function sendMessage() {
             if (!token) {
-                showAlert('alert-messages', '❌ Faça login primeiro!', 'error');
+                showAlert('alert-messaging', '❌ Faça login primeiro!', 'error');
                 return;
             }
 
-            const conversationId = document.getElementById('message-conversation-id').value;
-            const messageContent = document.getElementById('message-content').value;
-            const messageType = document.getElementById('message-type').value;
+            const conversationId = document.getElementById('msg-conversation-id').value;
+            const messageContent = document.getElementById('msg-content').value;
+            const messageType = document.getElementById('msg-type').value;
 
             if (!conversationId || !messageContent) {
-                showAlert('alert-messages', '❌ Preencha conversa ID e mensagem!', 'error');
+                showAlert('alert-messaging', '❌ Preencha conversa ID e mensagem!', 'error');
                 return;
             }
 
             const result = await apiCall('/api/platform/messages/send', 'POST', {
                 conversationId,
-                payload: {
-                    type: messageType,
-                    text: messageContent
-                },
+                payload: { type: messageType, text: messageContent },
                 token
             });
 
             if (result.success) {
-                document.getElementById('message-result').value = `✅ Mensagem enviada com sucesso!\n\nResposta:\n${result.output}`;
-                showAlert('alert-messages', '✅ Mensagem enviada!', 'success');
-                document.getElementById('message-content').value = '';
+                messages.push({ type: 'sent', content: messageContent, timestamp: new Date().toLocaleTimeString() });
+                updateMessageThread();
+                document.getElementById('msg-content').value = '';
+                showAlert('alert-messaging', '✅ Mensagem enviada!', 'success');
             } else {
-                document.getElementById('message-result').value = `❌ Erro: ${result.error}`;
-                showAlert('alert-messages', '❌ Erro ao enviar: ' + result.error, 'error');
+                showAlert('alert-messaging', '❌ Erro: ' + result.error, 'error');
             }
         }
 
-        // ===== LOGS FUNCTION =====
+        function updateMessageThread() {
+            const thread = document.getElementById('message-thread');
+            thread.innerHTML = messages.map(msg => `
+                <div class="message ${msg.type}">
+                    <strong>${msg.type === 'sent' ? '📤 Enviado' : '📥 Recebido'}:</strong> ${msg.content}
+                    <br><small>${msg.timestamp}</small>
+                </div>
+            `).join('');
+            thread.scrollTop = thread.scrollHeight;
+        }
+
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket('ws://localhost:8080/ws/connect');
+                ws.onopen = () => {
+                    updateWebSocketStatus(true);
+                    showAlert('alert-messaging', '✅ WebSocket conectado!', 'success');
+                };
+                ws.onmessage = (event) => {
+                    messages.push({ type: 'received', content: event.data, timestamp: new Date().toLocaleTimeString() });
+                    updateMessageThread();
+                };
+                ws.onerror = (error) => {
+                    showAlert('alert-messaging', '❌ Erro WebSocket: ' + error, 'error');
+                };
+                ws.onclose = () => {
+                    updateWebSocketStatus(false);
+                };
+            } catch (err) {
+                showAlert('alert-messaging', '❌ Erro: ' + err.message, 'error');
+            }
+        }
+
+        function disconnectWebSocket() {
+            if (ws) {
+                ws.close();
+                updateWebSocketStatus(false);
+                showAlert('alert-messaging', '✅ WebSocket desconectado', 'success');
+            }
+        }
+
+        function updateWebSocketStatus(connected) {
+            const status = document.getElementById('ws-status');
+            if (connected) {
+                status.textContent = 'Conectado';
+                status.className = 'status-badge status-online';
+            } else {
+                status.textContent = 'Desconectado';
+                status.className = 'status-badge status-stopped';
+            }
+        }
+
+        // ===== PRESENCE FUNCTIONS =====
+        async function goOnline() {
+            if (!token) {
+                showAlert('alert-presence', '❌ Faça login primeiro!', 'error');
+                return;
+            }
+            const result = await apiCall('/api/presence/online', 'POST', { token });
+            if (result.success) {
+                currentPresence = 'online';
+                document.getElementById('my-presence').textContent = '🟢 Online';
+                document.getElementById('my-presence').className = 'status-badge status-online';
+                showAlert('alert-presence', '✅ Status: Online', 'success');
+            } else {
+                showAlert('alert-presence', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function goOffline() {
+            const result = await apiCall('/api/presence/offline', 'POST', { token });
+            if (result.success) {
+                currentPresence = 'offline';
+                document.getElementById('my-presence').textContent = '🔴 Offline';
+                document.getElementById('my-presence').className = 'status-badge status-stopped';
+                showAlert('alert-presence', '✅ Status: Offline', 'success');
+            } else {
+                showAlert('alert-presence', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function checkUserPresence() {
+            const userId = document.getElementById('presence-user-id').value;
+            if (!userId) {
+                showAlert('alert-presence', '❌ Preencha ID do usuário', 'error');
+                return;
+            }
+            const result = await apiCall('/api/presence/check/' + userId);
+            if (result.success) {
+                const status = result.data.online ? '🟢 Online' : '🔴 Offline';
+                document.getElementById('presence-result').value = `Status: ${status}\nÚltima atividade: ${result.data.lastActivity || 'N/A'}`;
+            } else {
+                document.getElementById('presence-result').value = 'Erro: ' + result.error;
+            }
+        }
+
+        async function getOnlineUsers() {
+            const result = await apiCall('/api/presence/online-users');
+            if (result.success) {
+                const users = document.getElementById('online-users');
+                users.innerHTML = result.data.map(user => `
+                    <div class="status-item">
+                        <strong>${user.username}</strong>
+                        <span class="status-badge status-online">🟢 Online</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ===== STORAGE FUNCTIONS =====
+        async function initiateUpload() {
+            if (!token) {
+                showAlert('alert-storage', '❌ Faça login primeiro!', 'error');
+                return;
+            }
+            const filename = document.getElementById('upload-filename').value;
+            const mimeType = document.getElementById('upload-mimetype').value;
+            const fileSize = document.getElementById('upload-content').value.length;
+
+            const result = await apiCall('/api/platform/upload/initiate', 'POST', { filename, mimeType, fileSize, token });
+            if (result.success) {
+                uploadData = result.data;
+                document.getElementById('upload-result').value = JSON.stringify(uploadData, null, 2);
+                showAlert('alert-storage', '✅ Upload iniciado!', 'success');
+            } else {
+                showAlert('alert-storage', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function uploadFile() {
+            if (!uploadData.presignedUrls) {
+                showAlert('alert-storage', '❌ Inicie o upload primeiro!', 'error');
+                return;
+            }
+            const content = document.getElementById('upload-content').value;
+            const result = await apiCall('/api/platform/upload/file', 'POST', { presignedUrl: uploadData.presignedUrls[0], content });
+            if (result.success) {
+                uploadData.eTag = result.eTag;
+                document.getElementById('upload-result').value = `ETag: ${result.eTag}\n\n${result.output}`;
+                showAlert('alert-storage', '✅ Arquivo enviado!', 'success');
+            } else {
+                showAlert('alert-storage', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function completeUpload() {
+            if (!uploadData.attachmentId || !uploadData.eTag) {
+                showAlert('alert-storage', '❌ Complete os passos anteriores!', 'error');
+                return;
+            }
+            const result = await apiCall('/api/platform/upload/complete', 'POST', { attachmentId: uploadData.attachmentId, eTag: uploadData.eTag, token });
+            if (result.success) {
+                document.getElementById('upload-result').value = '✅ Upload completado!\n\n' + result.output;
+                showAlert('alert-storage', '✅ Arquivo armazenado!', 'success');
+                uploadData = {};
+            } else {
+                showAlert('alert-storage', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function listBuckets() {
+            const result = await apiCall('/api/storage/buckets');
+            if (result.success) {
+                document.getElementById('upload-result').value = JSON.stringify(result.buckets, null, 2);
+            }
+        }
+
+        // ===== TELEGRAM FUNCTIONS =====
+        async function saveTelegramConfig() {
+            const token = document.getElementById('telegram-token').value;
+            const chatId = document.getElementById('telegram-chat-id').value;
+            const result = await apiCall('/api/telegram/config', 'POST', { token, chatId });
+            if (result.success) {
+                showAlert('alert-telegram', '✅ Configuração salva!', 'success');
+            } else {
+                showAlert('alert-telegram', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function sendTelegramMessage() {
+            const message = document.getElementById('telegram-message').value;
+            const result = await apiCall('/api/telegram/send', 'POST', { message });
+            if (result.success) {
+                document.getElementById('telegram-messages').innerHTML += `<div class="message sent">📤 ${message}</div>`;
+                document.getElementById('telegram-message').value = '';
+                showAlert('alert-telegram', '✅ Mensagem enviada!', 'success');
+            } else {
+                showAlert('alert-telegram', '❌ Erro: ' + result.error, 'error');
+            }
+        }
+
+        async function testTelegramConnection() {
+            const result = await apiCall('/api/telegram/test');
+            document.getElementById('telegram-status').value = result.success ? '✅ Conexão OK' : '❌ Erro: ' + result.error;
+        }
+
+        async function startTelegramListener() {
+            showAlert('alert-telegram', '👂 Listener iniciado...', 'info');
+        }
+
+        async function stopTelegramListener() {
+            showAlert('alert-telegram', '⏹️ Listener parado', 'info');
+        }
+
+        // ===== MONITORING FUNCTIONS =====
+        async function getPrometheusMetrics() {
+            const result = await apiCall('/api/metrics/prometheus');
+            if (result.success) {
+                document.getElementById('prometheus-metrics').value = result.metrics;
+            }
+        }
+
+        async function getGrafanaHealth() {
+            const result = await apiCall('/api/metrics/grafana-health');
+            document.getElementById('grafana-status').value = JSON.stringify(result.data || result.error, null, 2);
+        }
+
+        async function getApplicationMetrics() {
+            const result = await apiCall('/api/metrics/app');
+            if (result.success) {
+                const metricsDiv = document.getElementById('app-metrics');
+                metricsDiv.innerHTML = Object.entries(result.data).map(([key, value]) => `
+                    <div class="metric">
+                        <div class="metric-value">${value}</div>
+                        <div class="metric-label">${key}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ===== ADVANCED FUNCTIONS =====
         async function getLogs(lines = 50) {
             const logsDiv = document.getElementById('logs-display');
             logsDiv.innerHTML = '<span class="spinner"></span> Carregando logs...';
@@ -517,8 +1136,65 @@
             }
         }
 
-        // Inicializar
-        window.addEventListener('load', getDockerStatus);
+        async function restartApp() {
+            showAlert('alert-storage', '⏳ Reiniciando aplicação...', 'info');
+            const result = await apiCall('/api/admin/restart', 'POST');
+            if (result.success) {
+                showAlert('alert-storage', '✅ Aplicação reiniciada!', 'success');
+            }
+        }
+
+        async function rebuildContainers() {
+            showAlert('alert-storage', '⏳ Rebuilding containers...', 'info');
+            const result = await apiCall('/api/docker/rebuild', 'POST');
+            if (result.success) {
+                showAlert('alert-storage', '✅ Rebuild completo!', 'success');
+            }
+        }
+
+        async function pruneDocker() {
+            if (confirm('Tem certeza? Isto deletará containers e imagens não usados.')) {
+                const result = await apiCall('/api/docker/prune', 'POST');
+                if (result.success) {
+                    showAlert('alert-storage', '✅ Docker limpado!', 'success');
+                }
+            }
+        }
+
+        async function getSystemInfo() {
+            const result = await apiCall('/api/system/info');
+            if (result.success) {
+                document.getElementById('system-info').value = JSON.stringify(result.data, null, 2);
+            }
+        }
+
+        async function testLatency() {
+            const start = Date.now();
+            const result = await apiCall('/api/test/ping');
+            const latency = Date.now() - start;
+            document.getElementById('test-results').value = `⏱️ Latência: ${latency}ms\n\nResultado: ${JSON.stringify(result, null, 2)}`;
+        }
+
+        async function testThroughput() {
+            showAlert('alert-storage', '📊 Testando throughput...', 'info');
+            const result = await apiCall('/api/test/throughput', 'POST');
+            if (result.success) {
+                document.getElementById('test-results').value = `📊 Throughput: ${result.data}\n\n${result.details}`;
+            }
+        }
+
+        async function testConcurrency() {
+            showAlert('alert-storage', '🔀 Testando concorrência...', 'info');
+            const result = await apiCall('/api/test/concurrency', 'POST');
+            if (result.success) {
+                document.getElementById('test-results').value = `🔀 Concorrência: ${result.data}\n\n${result.details}`;
+            }
+        }
+
+        // ===== INICIALIZAR =====
+        window.addEventListener('load', () => {
+            getDockerStatus();
+        });
     </script>
 </body>
 </html>
