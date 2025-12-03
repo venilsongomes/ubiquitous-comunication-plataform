@@ -5,9 +5,9 @@ services:
   # --- Serviço Java ---
   app:
     build: ./platform-core
-    container_name: app
-    ports:
-      - "8080:8080"
+    #container_name: app
+   # ports:
+     # - "8080:8080"
     depends_on:
       - postgres
       - kafka
@@ -141,9 +141,9 @@ services:
   # --- Instagram Mock ---
   instagram_mock:
     build: ./connectors/connector_instagram_mock
-    container_name: instagram_mock
-    ports:
-      - "3002:3002"
+    #container_name: instagram_mock
+    #ports:
+      #- "3002:3002"
     environment:
       KAFKA_BROKER: kafka:9092
     depends_on:
@@ -152,9 +152,9 @@ services:
   # --- WhatsApp Mock ---
   whatsapp_mock:
     build: ./connectors/connector_whatsapp_mock
-    container_name: whatsapp_mock
-    ports:
-      - "3001:3001"
+    #container_name: whatsapp_mock
+    #ports:
+      #- "3001:3001"
     environment:
       KAFKA_BROKER: kafka:9092
     depends_on:
