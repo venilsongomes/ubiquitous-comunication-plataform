@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.worker;
+package br.com.yourcompany.platformcore.Worker;
 import br.com.yourcompany.platformcore.domain.conversation.Conversation;
 import br.com.yourcompany.platformcore.domain.conversation.ConversationParticipant;
 import br.com.yourcompany.platformcore.domain.message.Message;
@@ -64,7 +64,7 @@ public class MessageProcessingWorker {
             User sender = userRepository.findById(event.getSenderId()).orElseThrow();
             Conversation conversation = conversationRepository.findById(event.getConversationId()).orElseThrow();
 
-            Message message = new Message(event.getMessageId(), conversation, sender, event.getContent());
+            Message message = new Message(event.getMessageId(), conversation, sender, event.getContent(), event.getTimestamp());
             Message savedMessage = messageRepository.save(message);
             
             List<ConversationParticipant> participants = 

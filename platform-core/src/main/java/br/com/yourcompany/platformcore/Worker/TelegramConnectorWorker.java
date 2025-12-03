@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.worker;
+package br.com.yourcompany.platformcore.Worker;
 import org.springframework.kafka.support.KafkaHeaders; // <-- IMPORTAR
 import org.springframework.messaging.handler.annotation.Header; // <-- IMPORTAR
 import org.springframework.messaging.handler.annotation.Payload; // <-- IMPORTAR
@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.yourcompany.platformcore.connector.TelegramConnectorService;
 import br.com.yourcompany.platformcore.dto.InternalMessageEvent;
-import br.com.yourcompany.platformcore.repository.UserIdentityRepository;
 
-import java.util.List;
 
 @Service
 public class TelegramConnectorWorker {
@@ -53,7 +51,6 @@ public class TelegramConnectorWorker {
         // 2. O log do `TelegramConnectorService` (onUpdateReceived) mostrará seu Chat ID.
         // 3. Coloque esse Chat ID aqui:
         
-       // String mockExternalChatId = "691942299"; // 
 
         telegramService.sendMessage(externalChatId, event.getContent());
     }

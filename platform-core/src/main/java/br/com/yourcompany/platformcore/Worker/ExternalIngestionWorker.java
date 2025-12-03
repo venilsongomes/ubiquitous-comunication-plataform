@@ -1,4 +1,4 @@
-package br.com.yourcompany.platformcore.worker;
+package br.com.yourcompany.platformcore.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import br.com.yourcompany.platformcore.domain.conversation.Conversation;
-import br.com.yourcompany.platformcore.domain.conversation.ConversationParticipant;
-import br.com.yourcompany.platformcore.domain.conversation.ConversationType;
-import br.com.yourcompany.platformcore.domain.message.Message;
+import br.com.yourcompany.platformcore.domain.conversation.*;
 import br.com.yourcompany.platformcore.domain.user.User;
 import br.com.yourcompany.platformcore.domain.user.UserIdentity;
 import br.com.yourcompany.platformcore.dto.InternalMessageEvent;
@@ -21,7 +18,6 @@ import br.com.yourcompany.platformcore.repository.ConversationRepository;
 import br.com.yourcompany.platformcore.repository.UserIdentityRepository;
 import br.com.yourcompany.platformcore.repository.UserRepository;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

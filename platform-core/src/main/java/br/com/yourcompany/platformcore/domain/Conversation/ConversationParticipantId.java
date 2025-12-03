@@ -4,11 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 @Embeddable
-@EqualsAndHashCode // <--- GARANTA QUE ESTA ANOTAÇÃO ESTEJA AQUI
 
 public class ConversationParticipantId implements Serializable {
    

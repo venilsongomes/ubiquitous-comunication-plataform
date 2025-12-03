@@ -15,6 +15,13 @@ public class ConnectivityCheck {
     private String serviceName;
     private Instant checkTimestamp;
 
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
     public Instant getCheckTimestamp() {
         return checkTimestamp;
     }

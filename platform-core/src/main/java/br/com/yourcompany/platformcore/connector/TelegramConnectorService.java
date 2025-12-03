@@ -1,5 +1,4 @@
 package br.com.yourcompany.platformcore.connector;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,13 +22,11 @@ public class TelegramConnectorService extends TelegramLongPollingBot {
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     private final String botUsername;
-    private final String botToken;
 
     public TelegramConnectorService(
             @Value("${telegram.bot.token}") String botToken,
             @Value("${telegram.bot.username}") String botUsername) {
         super(botToken);
-        this.botToken = botToken;
         this.botUsername = botUsername;
     }
 

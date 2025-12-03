@@ -34,6 +34,7 @@ public class ApplicationConfig {
     // 3. O provedor de autenticação que usa os dois beans acima
     @Bean
     public AuthenticationProvider authenticationProvider() {
+        @SuppressWarnings("deprecation")
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());

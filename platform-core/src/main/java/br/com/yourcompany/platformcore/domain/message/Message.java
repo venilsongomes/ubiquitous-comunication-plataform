@@ -46,7 +46,7 @@ public class Message {
     private Instant sentAt;
 
 
-    public Message(UUID id, Conversation conversation, User sender, String content) {
+    public Message(UUID id, Conversation conversation, User sender, String content, Instant sentAt) {
         this.id = id;
         this.conversation = conversation;
         this.sender = sender;

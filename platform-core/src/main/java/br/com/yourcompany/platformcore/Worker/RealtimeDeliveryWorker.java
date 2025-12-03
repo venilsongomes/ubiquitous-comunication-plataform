@@ -1,10 +1,9 @@
-package br.com.yourcompany.platformcore.worker;
+package br.com.yourcompany.platformcore.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import br.com.yourcompany.platformcore.dto.InternalMessageEvent;
 import br.com.yourcompany.platformcore.dto.InternalDeliveryEvent;
 import br.com.yourcompany.platformcore.websocket.RealtimeMessageHandler;
 
